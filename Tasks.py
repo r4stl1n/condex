@@ -324,7 +324,7 @@ def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, elgibleTicker, 
                 else:
                     logger.info("Selling " + str(rebalanceSellAmount) + " of " + rebalanceTicker + " at " + str(rebalanceCoinTicker.BTCVal))
                     sellOrderUUID = em.create_sell_order(rebalanceTicker, rebalanceSellAmount, rebalanceCoinTicker.BTCVal)['id']
-                    time.sleep(20*indexInfo.OrderTimeout)
+                    time.sleep(60*indexInfo.OrderTimeout)
 
                 # Check order succeded through
                 if CondexConfig.DEBUG == True:
@@ -376,7 +376,7 @@ def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, elgibleTicker, 
                         buyOrderUUID = em.create_buy_order(elgibleTicker, partial_fill_amount/elgibleCoinTicker.BTCVal, elgibleCoinTicker.BTCVal)['id']
                     else: 
                         buyOrderUUID = em.create_buy_order(elgibleTicker, elgibleBuyAmount, elgibleCoinTicker.BTCVal)['id']
-                    time.sleep(20*indexInfo.OrderTimeout)
+                    time.sleep(60*indexInfo.OrderTimeout)
 
                 # Check order succeded through
                 if CondexConfig.DEBUG == True:
@@ -462,7 +462,7 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
             else:
                 logger.info("Buying " + str(elgibleBuyAmount) + " of " + elgibleTicker + " at " + str(elgibleCoinTicker.BTCVal)) 
                 buyOrderUUID = em.create_buy_order(elgibleTicker, elgibleBuyAmount, elgibleCoinTicker.BTCVal)['id']
-                time.sleep(20*indexInfo.OrderTimeout)
+                time.sleep(60*indexInfo.OrderTimeout)
 
             # Check order succeded through
             if CondexConfig.DEBUG == True:
