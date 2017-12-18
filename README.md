@@ -9,6 +9,14 @@ Requirments:
 	Linux Operating System (Ubuntu 16.04 Prefered)
 
 ##### Setup Commands
+	Open the config folder and create a copy of the CondexConfig.py.template
+	Rename the CondexConfig.py.template to CondexConfig.py
+	Add your API key to the BITTREX_PUB and BITTREX_SEC fields
+>BITTREX_PUB='publickeyhere'
+>BITTREX_SEC='secretkeyhere'
+
+	Save the file then proceed to do the following
+
 Open a terminal and type the following
 > git clone git@github.com:R4stl1n/condex.git
 > cd condex
@@ -16,7 +24,7 @@ Open a terminal and type the following
 > pip install  -r requirments.txt
 > source .env/bin/activate
 >python main.py
-
+	
 In another terminal run the following:
 >cd condex
 >source .env/bin/activate
