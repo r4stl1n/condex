@@ -7,6 +7,7 @@ Condex is a console based crypto currency Index Fund Management centered around 
 
 Requirments:
 	Linux Operating System (Ubuntu 16.04 Prefered)
+	RabbitMQ Installed
 
 ##### Setup Commands
 	Open the config folder and create a copy of the CondexConfig.py.template
