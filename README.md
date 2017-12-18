@@ -13,6 +13,7 @@ Requirments:
 	Rename the CondexConfig.py.template to CondexConfig.py
 	Add your API key to the BITTREX_PUB and BITTREX_SEC fields
 >BITTREX_PUB='publickeyhere'
+
 >BITTREX_SEC='secretkeyhere'
 
 	Save the file then proceed to do the following
