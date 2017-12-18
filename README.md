@@ -24,11 +24,11 @@ Open a terminal and type the following
 
 > cd condex
 
-> pip virtualenv .env
-
-> pip install  -r requirments.txt
+> virtualenv .env
 
 > source .env/bin/activate
+
+> pip install  -r requirments.txt
 
 >python main.py
 	
