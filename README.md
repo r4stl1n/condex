@@ -19,6 +19,7 @@ Open a terminal and type the following
 
 In another terminal run the following:
 >cd condex
+>source .env/bin/activate
 >celery -A Tasks worker -B --loglevel=DEBUG --concurrency=4
 
 
