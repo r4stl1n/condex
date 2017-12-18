@@ -152,7 +152,7 @@ def wallet_update_task():
 
             if DatabaseManager.update_index_coin_model(indexedCoin.Ticker, 
                 indexedCoin.DesiredPercentage, (coinBalance.BTCBalance/totalBtcValue)*100, ((coinBalance.BTCBalance/totalBtcValue)*100)-indexedCoin.DesiredPercentage, indexedCoin.Locked):
-                totalUnrealizeGain = totalUnrealizeGain + ((coinBalance.BTCBalance/totalBtcValue)*100)
+                totalUnrealizeGain = totalUnrealizeGain + ((coinBalance.BTCBalance/totalBtcValue)*100)-indexedCoin.DesiredPercentage
                 totalRealizedGain = totalRealizedGain + realizedGainModel.RealizedGain
 
                 logger.debug("Total unrealized gain - " + str(totalUnrealizeGain))
