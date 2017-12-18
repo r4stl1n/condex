@@ -9,7 +9,6 @@ from config import CondexConfig
 
 from Tasks import app
 
-from models.IndexModel import IndexModel
 from models.TickerModel import TickerModel
 from models.IndexInfoModel import IndexInfoModel
 from models.CoinBalanceModel import CoinBalanceModel
