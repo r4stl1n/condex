@@ -21,15 +21,22 @@ Requirments:
 
 Open a terminal and type the following
 > git clone git@github.com:R4stl1n/condex.git
+
 > cd condex
+
 > pip virtualenv .env
+
 > pip install  -r requirments.txt
+
 > source .env/bin/activate
+
 >python main.py
 	
 In another terminal run the following:
 >cd condex
+
 >source .env/bin/activate
+
 >celery -A Tasks worker -B --loglevel=DEBUG --concurrency=4
 
 
