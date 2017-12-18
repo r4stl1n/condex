@@ -1,0 +1,8 @@
+import logging
+
+DEBUG = False
+LOGFILE = 'condex.log'
+DATABASE = 'datastore.db'
+BITTREX_PUB=''
+BITTREX_SEC=''
+BITTREX_MIN_BTC_TRADE_AMOUNT = 0.00050000
