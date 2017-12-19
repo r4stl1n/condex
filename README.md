@@ -8,32 +8,41 @@ Condex is a console based crypto currency Index Fund Management centered around 
 Requirments:
 	Linux Operating System (Ubuntu 16.04 Prefered)
 	RabbitMQ Installed
+	Python 2.7 installed
+	Pip installed
+	Pip virtualenv module
 
 ##### Configure your Bittrex API key
 1. Create a copy of the configuration template
-> cp config/CondexConfig.py.template CondexConfig.py
+```
+$ cp config/CondexConfig.py.template CondexConfig.py
+```
 2. edit the configuration file and paste your Bittrex public API key in BITTREX_PUB and your secret key in BITTREX_SEC
 
 ##### Setup Commands
 Open a terminal and type the following
-> git clone git@github.com:R4stl1n/condex.git
+```text
+$ git clone git@github.com:R4stl1n/condex.git
 
-> cd condex
+$ cd condex
 
-> virtualenv --python=python2.7 .env
+$ virtualenv --python=python2.7 .env (where python.27 is the path to your python 2.7 interpreter)
 
-> source .env/bin/activate
+$ source .env/bin/activate
 
-> pip install  -r requirments.txt
+$ pip install  -r requirements.txt
 
->python main.py
+$ python main.py
+```
 
 In another terminal run the following:
->cd condex
+```text
+$ cd condex
 
->source .env/bin/activate
+$ source .env/bin/activate
 
->celery -A Tasks worker -B --loglevel=DEBUG --concurrency=4
+$ celery -A Tasks worker -B --loglevel=DEBUG --concurrency=4
+```
 
 
 ##### Notes
