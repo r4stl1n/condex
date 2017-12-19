@@ -11,7 +11,6 @@ from terminaltables import AsciiTable
 
 from config import CondexConfig
 
-from models.IndexModel import IndexModel
 from models.TickerModel import TickerModel
 from models.IndexInfoModel import IndexInfoModel
 from models.IndexedCoinModel import IndexedCoinModel

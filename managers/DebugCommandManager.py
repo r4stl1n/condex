@@ -7,7 +7,6 @@ from Tasks import *
 from peewee import *
 from config import CondexConfig
 
-from models.IndexModel import IndexModel
 from models.TickerModel import TickerModel
 from models.CoinBalanceModel import CoinBalanceModel
 from models.IndexedCoinModel import IndexedCoinModel

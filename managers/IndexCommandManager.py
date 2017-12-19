@@ -9,7 +9,6 @@ from config import CondexConfig
 
 from Tasks import app
 
-from models.IndexModel import IndexModel
 from models.TickerModel import TickerModel
 from models.IndexInfoModel import IndexInfoModel
 from models.CoinBalanceModel import CoinBalanceModel
@@ -132,7 +131,7 @@ class IndexCommandManager:
                                 for iCoin in indexedCoins:
                                     if iCoin.Ticker != coin.upper():
                                         if iCoin.Locked != True:
-                                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToRemove, iCoin.CurrentPercentage, iCoin.UnrealizedGain, iCoin.Locked)
+                                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToAdd, iCoin.CurrentPercentage, iCoin.UnrealizedGain, iCoin.Locked)
 
                                 if isinstance(float(percentage),(float,int,complex,long)):
                                     if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0,0.0, lockCoin):
