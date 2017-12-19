@@ -90,7 +90,7 @@ Only the celery task is required for your index to continue to be managed. The c
 	Change the frequency the index performs a rebalance 
 		tickcount - number (in minutes) between each rebalance
 
->index start  
+>index start now
 
 	Start the index process and buy all the required amounts of coins to match the desired percentages
 
