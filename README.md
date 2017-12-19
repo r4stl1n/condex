@@ -20,7 +20,7 @@ Open a terminal and type the following
 
 > cd condex
 
-> virtualenv .env
+> virtualenv --python=python2.7 .env
 
 > source .env/bin/activate
 
