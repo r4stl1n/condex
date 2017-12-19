@@ -9,16 +9,12 @@ Requirments:
 	Linux Operating System (Ubuntu 16.04 Prefered)
 	RabbitMQ Installed
 
+##### Configure your Bittrex API key
+1. Create a copy of the configuration template
+> cp config/CondexConfig.py.template CondexConfig.py
+2. edit the configuration file and paste your Bittrex public API key in BITTREX_PUB and your secret key in BITTREX_SEC
+
 ##### Setup Commands
-	Open the config folder and create a copy of the CondexConfig.py.template
-	Rename the CondexConfig.py.template to CondexConfig.py
-	Add your API key to the BITTREX_PUB and BITTREX_SEC fields
->BITTREX_PUB='publickeyhere'
-
->BITTREX_SEC='secretkeyhere'
-
-	Save the file then proceed to do the following
-
 Open a terminal and type the following
 > git clone git@github.com:R4stl1n/condex.git
 
@@ -31,7 +27,7 @@ Open a terminal and type the following
 > pip install  -r requirments.txt
 
 >python main.py
-	
+
 In another terminal run the following:
 >cd condex
 
