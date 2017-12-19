@@ -68,14 +68,16 @@ Only the celery task is required for your index to continue to be managed. The c
 	Add a new coin into the index  
 		coin - the desired coin symbol to add  
 		percentage - the desired percentage (as a number) of the index the new coin should be allocated  
-		lock - boolean (true/false) value to lock the desired % of a coin and prevent it being adjusted when other coins are added/updated  
+		lock - boolean (true/false) value to lock the desired % of a coin and prevent it being adjusted when other coins are
+		added/updated  
 
 >index update (coin) (percentage) (lock)
 
 	Update a coin within the index  
 		coin - the desired coin symbol to update  
 		percentage - the new desired percentage of the index the coin should be allocated  
-		lock - boolean (true/false) value to lock the desired % of a coin and prevent it being adjusted when other coins are added/updated  
+		lock - boolean (true/false) value to lock the desired % of a coin and prevent it being adjusted when other coins are
+		added/updated  
 	
 >index remove (coin)  
 
@@ -108,7 +110,8 @@ Only the celery task is required for your index to continue to be managed. The c
 
 >debug perform_algo
 
-	Run the function to calculate and create the list of coins which have exceeded the threshold are are due for rebalancing and pass them into the rebalance funtion to be purchased and sold.
+	Run the function to calculate and create the list of coins which have exceeded the threshold are are due for rebalancing
+	and pass them into the rebalance funtion to be purchased and sold.
 
 >debug perform_rebalance (coin1) (amount1) (coin2) (amount2)
 
