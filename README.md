@@ -45,75 +45,78 @@ Only the celery task is required for your index to continue to be managed. The c
 
 ### Usage
 
-Condex Terminal Commands
+#### Condex Terminal Commands
 
--- Show Commands
+##### Show Commands
 
->show coins
-Display all available coin pairs on the exchange.
+>show coins  
 
->show stats
-Display text representation of the current value of the index and the individual percentage distributions and values of any coins held in the index.
+	Display all available coin pairs on the exchange.
+
+>show stats 
+
+	Display text representation of the current value of the index and the individual percentage distributions and values of any coins held in the index.
  
->show index
-Display visual representation of the current value of the index and the individual percentage distributions and values of any coins held in the index.
+>show index  
 
--- Index Commands
+	Display visual representation of the current value of the index and the individual percentage distributions and values of any coins held in the index.
+
+##### Index Commands
 
 >index add (coin) (percentage) (lock)
 
-Add a new coin into the index
-	coin - the desired coin symbol to add
-	percentage - the desired percentage (as a number) of the index the new coin should be allocated
-	lock - boolean (true/false) value to lock the desired % of a coin and prevent it being adjusted when other coins are added/updated
+	Add a new coin into the index  
+		coin - the desired coin symbol to add  
+		percentage - the desired percentage (as a number) of the index the new coin should be allocated  
+		lock - boolean (true/false) value to lock the desired % of a coin and prevent it being adjusted when other coins are added/updated  
 
 >index update (coin) (percentage) (lock)
 
-Update a coin within the index
-	coin - the desired coin symbol to update
-	percentage - the new desired percentage of the index the coin should be allocated
-	lock - boolean (true/false) value to lock the desired % of a coin and prevent it being adjusted when other coins are added/updated
+	Update a coin within the index  
+		coin - the desired coin symbol to update  
+		percentage - the new desired percentage of the index the coin should be allocated  
+		lock - boolean (true/false) value to lock the desired % of a coin and prevent it being adjusted when other coins are added/updated  
 	
->index remove (coin)
+>index remove (coin)  
 
-Remove a coin from the index
-	coin - the desired coin symbol to remove
+	Remove a coin from the index  
+		coin - the desired coin symbol to remove
 
->index threshhold (percentage)
+>index threshhold (percentage)  
 
-Change the rebalance threshold percentage within the index
-	percentage - the new percentage a coin can move from it's desired percentage before it becomes eligible to be rebalanced
+	Change the rebalance threshold percentage within the index  
+		percentage - the new percentage a coin can move from it's desired percentage before it becomes eligible to be rebalanced
 
->index rtime (tickcount)
+>index rtime (tickcount)  
 
-Change the frequency the index performs a rebalance 
-	tickcount - number (in minutes) between each rebalance
+	Change the frequency the index performs a rebalance 
+		tickcount - number (in minutes) between each rebalance
 
->index start
+>index start  
 
-Start the index process and buy all the required amounts of coins to match the desired percentages
+	Start the index process and buy all the required amounts of coins to match the desired percentages
 
--- Debug Commands - The below functions are run automatically within the Celery task processes and are not required during normal usage of the index.
+##### Debug Commands - The below functions are run automatically within the Celery task processes and are not required during normal usage of the index.
 
 >debug coin_update
 
-Run an API call to request the current values of coins from the exchange
+	Run an API call to request the current values of coins from the exchange
 
 >debug wallet_update
 
-Run an API call to request the current amounts of owned coins from the exchange and update the index with those values
+	Run an API call to request the current amounts of owned coins from the exchange and update the index with those values
 
 >debug perform_algo
 
-Run the function to calculate and create the list of coins which have exceeded the threshold are are due for rebalancing and pass them into the rebalance funtion to be purchased and sold.
+	Run the function to calculate and create the list of coins which have exceeded the threshold are are due for rebalancing and pass them into the rebalance funtion to be purchased and sold.
 
 >debug perform_rebalance (coin1) (amount1) (coin2) (amount2)
 
-Run the function to sell a coin above the threshold percentage and buy one below it
-	coin1 - the coin to sell
-	amount1 - the amount of coin1 to sell
-	coin2 - the coin to buy
-	amount2 - the amount of coin2 to buy
+	Run the function to sell a coin above the threshold percentage and buy one below it
+		coin1 - the coin to sell
+		amount1 - the amount of coin1 to sell
+		coin2 - the coin to buy
+		amount2 - the amount of coin2 to buy
 
 ### Who To Thank:
 
