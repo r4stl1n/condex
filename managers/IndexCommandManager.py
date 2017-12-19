@@ -242,8 +242,8 @@ class IndexCommandManager:
                     
                     coinTicker = DatabaseManager.get_ticker_model(iCoin.Ticker.upper() + "/BTC")
 
-                    print coinTicker
-                    print iCoin.Ticker
+                    sys.stdout.write(coinTicker)
+                    sys.stdout.write(iCoin.Ticker)
                     percentage_btc_amount = (indexInfo.TotalBTCVal/100)*iCoin.DesiredPercentage
                     
                     amountToBuy = percentage_btc_amount / coinTicker.BTCVal

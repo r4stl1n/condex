@@ -15,7 +15,7 @@ Requirments:
 ##### Configure your Bittrex API key
 1. Create a copy of the configuration template
 ```
-$ cp config/CondexConfig.py.template CondexConfig.py
+$ cp config/CondexConfig.py.template config/CondexConfig.py
 ```
 2. edit the configuration file and paste your Bittrex public API key in BITTREX_PUB and your secret key in BITTREX_SEC
 

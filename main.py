@@ -122,8 +122,8 @@ class ConDex(cmd.Cmd):
         return True
 
     def do_herp(self,line):
-        print em.get_tickers()
-        print wallet_data['BTC/USDT']['info']['Ask']
+        sys.stdout.write(em.get_tickers())
+        sys.stdout.write(wallet_data['BTC/USDT']['info']['Ask'])
 
     def do_clear(self,line):
         Util.clear_screen()
