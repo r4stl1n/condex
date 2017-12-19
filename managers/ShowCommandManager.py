@@ -46,6 +46,7 @@ class ShowCommandManager:
         table = AsciiTable(table_data)
 
         sys.stdout.write(table.table)
+        sys.stdout.write('\n')
 
     def show_stats(self):
         indexInfo = IndexInfoModel.get(id=1)
@@ -73,6 +74,7 @@ class ShowCommandManager:
 
         sys.stdout.write("\nCurrent Index Table")
         sys.stdout.write(coin_table.table)
+        sys.stdout.write('\n')
 
     def show_index(self):
         graphArray = []
@@ -98,5 +100,5 @@ class ShowCommandManager:
 
         sys.stdout.write("\n")
         for line in  pyGraph.graph('Index Distribution', data=data):
-            print(line)
+            sys.stdout.write(line)
         sys.stdout.write("\n")
