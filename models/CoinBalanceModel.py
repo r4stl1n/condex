@@ -1,6 +1,6 @@
 from peewee import *
 
-from BaseModel import BaseModel
+from models.BaseModel import BaseModel
 
 class CoinBalanceModel(BaseModel):
     Coin = CharField(unique=True)
