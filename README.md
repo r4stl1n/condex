@@ -5,11 +5,11 @@ Condex is a console based crypto currency Index Fund Management centered around 
 
 ### Installation Instructions
 
-Requirments:
-	Linux Operating System (Ubuntu 16.04 Prefered)
-	RabbitMQ Installed
-	Python installed - this app should work with both Python 2.7 and Python 3
-	Pip installed
+Requirements:
+* Linux Operating System (Ubuntu 16.04 Prefered)
+* RabbitMQ Installed
+* Python installed - this app should work with both Python 2.7 and Python 3
+* Pip installed
 
 ##### Configure your Bittrex API key
 1. Create a copy of the configuration template

@@ -97,6 +97,8 @@ def wallet_update_task():
 
     logger.info("Starting Wallet Update Task")
 
+    totalUnrealizedGain = 0.0
+    totalRealizedGain = 0.0
     for key in DatabaseManager.get_all_supported_coin_models():
 
         btcbalance = 0.0
@@ -138,24 +140,23 @@ def wallet_update_task():
             else:
                 logger.error("Failed Update Coin Balance Model - " + key.Ticker)
 
-    totalUnrealizeGain = 0.0
-    totalRealizedGain = 0.0
-    
-    for key in DatabaseManager.get_all_supported_coin_models():
-
-
         coinBalance = DatabaseManager.get_coin_balance_model(key.Ticker)
         indexedCoin = DatabaseManager.get_index_coin_model(key.Ticker)
         realizedGainModel = DatabaseManager.get_realized_gain_model(key.Ticker)
 
         if indexedCoin is not None:
 
-            if DatabaseManager.update_index_coin_model(indexedCoin.Ticker, 
-                indexedCoin.DesiredPercentage, (coinBalance.BTCBalance/totalBtcValue)*100, ((coinBalance.BTCBalance/totalBtcValue)*100)-indexedCoin.DesiredPercentage, indexedCoin.Locked):
-                totalUnrealizeGain = totalUnrealizeGain + (((coinBalance.BTCBalance/totalBtcValue)*100)-indexedCoin.DesiredPercentage)
+            coin_unrealized_gain = coinBalance.calculate_unrealized_gain(tickerModel)
+            if DatabaseManager.update_index_coin_model(
+                indexedCoin.Ticker, 
+                indexedCoin.DesiredPercentage,
+                (coinBalance.BTCBalance/totalBtcValue)*100,
+                coin_unrealized_gain,
+                indexedCoin.Locked):
+                totalUnrealizedGain = totalUnrealizedGain + coin_unrealized_gain
                 totalRealizedGain = totalRealizedGain + realizedGainModel.RealizedGain
 
-                logger.debug("Total unrealized gain - " + str(totalUnrealizeGain))
+                logger.debug("Total unrealized gain - " + str(totalUnrealizedGain))
                 logger.debug("Updated Indexed Coin Model - " + indexedCoin.Ticker)
             else:
                 logger.error("Failed To Update Indexed Coin Model - " + indexedCoin.Ticker)
@@ -164,10 +165,10 @@ def wallet_update_task():
 
     indexInfo = DatabaseManager.get_index_info_model()
 
-    totalUnrealizeGain = totalUnrealizeGain 
+    totalUnrealizedGain = totalUnrealizedGain 
 
     if DatabaseManager.update_index_info_model(indexInfo.Active, totalBtcValue, btcUsdValue * totalBtcValue, totalRealizedGain,
-     totalUnrealizeGain, indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount, indexInfo.RebalanceTickSetting):
+     totalUnrealizedGain, indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount, indexInfo.RebalanceTickSetting):
         logger.debug("Updated Index Info Model")
     else:
         logger.error("Failed To Update Index Info Model")
