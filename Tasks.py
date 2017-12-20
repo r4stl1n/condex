@@ -165,8 +165,6 @@ def wallet_update_task():
 
     indexInfo = DatabaseManager.get_index_info_model()
 
-    totalUnrealizedGain = totalUnrealizedGain 
-
     if DatabaseManager.update_index_info_model(indexInfo.Active, totalBtcValue, btcUsdValue * totalBtcValue, totalRealizedGain,
      totalUnrealizedGain, indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount, indexInfo.RebalanceTickSetting):
         logger.debug("Updated Index Info Model")
