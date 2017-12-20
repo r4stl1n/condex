@@ -123,23 +123,6 @@ def wallet_update_task():
             btcbalance=walletData[key.Ticker]['total']
             usdBalance=btcUsdValue*btcbalance
 
-
-        indexedCoin = DatabaseManager.get_index_coin_model(key.Ticker)
-
-        if indexedCoin is not None:
-            totalBtcValue = totalBtcValue + btcbalance
-
-
-        if DatabaseManager.create_coin_balance_model(key.Ticker, btcbalance, usdBalance, totalCoins, datetime.datetime.now()):
-            #logger.debug("Created Coin Balance Model - " + key.Ticker)
-            pass
-        else:
-            if DatabaseManager.update_coin_balance_model(key.Ticker, btcbalance, btcUsdValue*btcbalance, totalCoins, datetime.datetime.now()):
-                #logger.debug("Updated Coin Balance Model - " + key.Ticker)
-                pass
-            else:
-                logger.error("Failed Update Coin Balance Model - " + key.Ticker)
-
         coinBalance = DatabaseManager.get_coin_balance_model(key.Ticker)
         indexedCoin = DatabaseManager.get_index_coin_model(key.Ticker)
         realizedGainModel = DatabaseManager.get_realized_gain_model(key.Ticker)
@@ -160,6 +143,23 @@ def wallet_update_task():
                 logger.debug("Updated Indexed Coin Model - " + indexedCoin.Ticker)
             else:
                 logger.error("Failed To Update Indexed Coin Model - " + indexedCoin.Ticker)
+
+        indexedCoin = DatabaseManager.get_index_coin_model(key.Ticker)
+
+        if indexedCoin is not None:
+            totalBtcValue = totalBtcValue + btcbalance
+
+
+        if DatabaseManager.create_coin_balance_model(key.Ticker, btcbalance, usdBalance, totalCoins, datetime.datetime.now()):
+            #logger.debug("Created Coin Balance Model - " + key.Ticker)
+            pass
+        else:
+            if DatabaseManager.update_coin_balance_model(key.Ticker, btcbalance, btcUsdValue*btcbalance, totalCoins, datetime.datetime.now()):
+                #logger.debug("Updated Coin Balance Model - " + key.Ticker)
+                pass
+            else:
+                logger.error("Failed Update Coin Balance Model - " + key.Ticker)
+
 
 
 
