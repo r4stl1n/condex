@@ -1,3 +1,4 @@
+import sys
 import json
 import ccxt
 import time
@@ -44,7 +45,8 @@ class ShowCommandManager:
 
         table = AsciiTable(table_data)
 
-        print table.table
+        sys.stdout.write(table.table)
+        sys.stdout.write('\n')
 
     def show_stats(self):
         indexInfo = IndexInfoModel.get(id=1)
@@ -67,11 +69,12 @@ class ShowCommandManager:
         coin_table = AsciiTable(cointTableData)
         summary_table = AsciiTable(summary_table_data)
 
-        print "\nCurrent Index Summary"
-        print summary_table.table
+        sys.stdout.write("\nCurrent Index Summary\n")
+        sys.stdout.write(summary_table.table)
 
-        print "\nCurrent Index Table"
-        print coin_table.table
+        sys.stdout.write("\nCurrent Index Table\n")
+        sys.stdout.write(coin_table.table)
+        sys.stdout.write('\n')
 
     def show_index(self):
         graphArray = []
@@ -95,7 +98,7 @@ class ShowCommandManager:
         data = hcolor(graphArray, thresholds)
 
 
-        print "\n"
+        sys.stdout.write("\n")
         for line in  pyGraph.graph('Index Distribution', data=data):
-            print(line)
-        print "\n"
+            sys.stdout.write(line)
+        sys.stdout.write("\n")

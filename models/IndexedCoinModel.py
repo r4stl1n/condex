@@ -1,6 +1,6 @@
 from peewee import *
 
-from BaseModel import BaseModel
+from models.BaseModel import BaseModel
 
 class IndexedCoinModel(BaseModel):
     Ticker = CharField(unique=True)
