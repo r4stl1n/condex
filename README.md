@@ -8,9 +8,8 @@ Condex is a console based crypto currency Index Fund Management centered around 
 Requirments:
 	Linux Operating System (Ubuntu 16.04 Prefered)
 	RabbitMQ Installed
-	Python 2.7 installed
+	Python installed - this app should work with both Python 2.7 and Python 3
 	Pip installed
-	Pip virtualenv module
 
 ##### Configure your Bittrex API key
 1. Create a copy of the configuration template
@@ -27,6 +26,9 @@ $ git clone git@github.com:R4stl1n/condex.git
 $ cd condex
 
 $ virtualenv --python=python2.7 .env (where python.27 is the path to your python 2.7 interpreter)
+
+or for python 3
+$ python3 -m venv .env
 
 $ source .env/bin/activate
 
