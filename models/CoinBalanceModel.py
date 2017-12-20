@@ -5,6 +5,7 @@ from models.TickerModel import TickerModel
 
 class CoinBalanceModel(BaseModel):
     Coin = CharField(unique=True)
+    PriorBTCBalance = DoubleField()
     TotalCoins = DoubleField()
     BTCBalance = DoubleField()
     USDBalance = DoubleField()
@@ -13,7 +14,8 @@ class CoinBalanceModel(BaseModel):
     def calculate_unrealized_gain(self, ticker):
         if (self.TotalCoins == 0):
             return 0
-        btc_cost_per_coin = self.BTCBalance / self.TotalCoins
+        
+        btc_cost_per_coin = self.PriorBTCBalance / self.TotalCoins
 
         current_btc_value = ticker.BTCVal
 

@@ -74,7 +74,7 @@ class DatabaseManager:
     @staticmethod
     def create_coin_balance_model(ticker, btcBalance, usdBalalnce, totalCoins, lastUpdate):
         try:
-            CoinBalanceModel.create(Coin=ticker, BTCBalance=round(btcBalance,8), USDBalance=round(usdBalalnce,8), TotalCoins=round(totalCoins,8),LastUpdated=lastUpdate)
+            CoinBalanceModel.create(Coin=ticker, PriorBTCBalance = round(btcBalance,8), BTCBalance=round(btcBalance,8), USDBalance=round(usdBalalnce,8), TotalCoins=round(totalCoins,8), LastUpdated=lastUpdate)
             return True
         except IntegrityError:
             return False
@@ -87,6 +87,7 @@ class DatabaseManager:
 
             coinBalanceModel = CoinBalanceModel.get(CoinBalanceModel.Coin == ticker)
 
+            coinBalanceModel.PriorBTCBalance = coinBalanceModel.BTCBalance
             coinBalanceModel.BTCBalance = round(btcBalance,8)
             coinBalanceModel.USDBalance = round(usdBalalnce,8)
             coinBalanceModel.TotalCoins = round(totalCoins,8)
