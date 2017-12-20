@@ -69,10 +69,10 @@ class ShowCommandManager:
         coin_table = AsciiTable(cointTableData)
         summary_table = AsciiTable(summary_table_data)
 
-        sys.stdout.write("\nCurrent Index Summary")
+        sys.stdout.write("\nCurrent Index Summary\n")
         sys.stdout.write(summary_table.table)
 
-        sys.stdout.write("\nCurrent Index Table")
+        sys.stdout.write("\nCurrent Index Table\n")
         sys.stdout.write(coin_table.table)
         sys.stdout.write('\n')
 

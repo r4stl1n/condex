@@ -211,8 +211,8 @@ def perform_algo_task():
                     coinsElgibleForIncrease[indexedCoin.Ticker] = indexedCoin.UnrealizedGain
 
             # Sort our tables
-            coinsAboveThreshold = Util.tuple_list_to_dict(sorted(coinsAboveThreshold.items(), reverse=True))
-            coinsElgibleForIncrease = Util.tuple_list_to_dict(sorted(coinsElgibleForIncrease.items(), reverse=True))
+            coinsAboveThreshold = Util.tuple_list_to_dict(sorted(coinsAboveThreshold.items(), key=lambda pair: pair[1], reverse=True))
+            coinsElgibleForIncrease = Util.tuple_list_to_dict(sorted(coinsElgibleForIncrease.items(), key=lambda pair: pair[1], reverse=True))
             
             if len(coinsAboveThreshold) >= 1:
                 logger.debug("Currently " + str(len(coinsAboveThreshold)) + " avalible for rebalance")
