@@ -153,11 +153,10 @@ def wallet_update_task():
 
         if indexedCoin is not None:
 
-            distanceFromTarget = (coinBalance.get_current_percentage(totalBtcValue) - indexedCoin.DesiredPercentage)
             if DatabaseManager.update_index_coin_model(
                 indexedCoin.Ticker, 
                 indexedCoin.DesiredPercentage,
-                distanceFromTarget,
+                indexedCoin.get_distance_from_target(coinBalance,totalBtcValue),
                 indexedCoin.Locked):
 
                 logger.debug("Updated Indexed Coin Model - " + indexedCoin.Ticker)
@@ -362,7 +361,7 @@ def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, elgibleTicker, 
         logger.info("Sell of coin " + rebalanceTicker + " failed after " + str(coinSellRetryCount) + " attempts")
 
     else:
-        if elgibleTicker != "BTC" and elgibleTicker != "btc":
+        if eligibleTicker.upper() != "BTC":
             while coinBuyIncomplete:
 
                 if coinBuyRetryCount >= retryLimit:
