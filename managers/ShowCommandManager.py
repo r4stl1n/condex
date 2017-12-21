@@ -52,7 +52,7 @@ class ShowCommandManager:
         indexInfo = IndexInfoModel.get(id=1)
 
         # Create the Index Table
-        cointTableData =[['Coin', 'Amount', 'BTC Val', 'USD Val', 'Locked', 'Desired %', 'Current %', 'Distance From Target %']]
+        cointTableData =[['Coin', 'Amount', 'BTC Val', 'USD Val', 'Locked', 'Desired %', 'Current %', 'Off Target %']]
 
         for coin in IndexedCoinModel.select():
 
