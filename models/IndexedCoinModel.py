@@ -8,3 +8,5 @@ class IndexedCoinModel(BaseModel):
     DistanceFromTarget = DoubleField()
     Locked = BooleanField()
 
+    def get_distance_from_target(self, coinBalanceModel, totalBtcValue):
+        return (coinBalanceModel.get_current_percentage(totalBtcValue) - self.DesiredPercentage)
