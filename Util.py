@@ -7,7 +7,6 @@ from models.CoinLockModel import CoinLockModel
 from models.IndexInfoModel import IndexInfoModel
 from models.IndexedCoinModel import IndexedCoinModel
 from models.CoinBalanceModel import CoinBalanceModel
-from models.RealizedGainModel import RealizedGainModel
 from models.RebalanceTickModel import RebalanceTickModel
 from models.SupportedCoinModel import SupportedCoinModel
 
@@ -24,13 +23,13 @@ class Util:
     def bootstrap():
         try:
             internal_database.connect()
-            internal_database.create_tables([TickerModel, IndexInfoModel, IndexedCoinModel, SupportedCoinModel, CoinBalanceModel, RebalanceTickModel, RealizedGainModel, CoinLockModel])
+            internal_database.create_tables([TickerModel, IndexInfoModel, IndexedCoinModel, SupportedCoinModel,
+                                             CoinBalanceModel, RebalanceTickModel, CoinLockModel])
 
-            IndexInfoModel.create(Active=False, CoinCount=0, TotalBTCVal=0.0, TotalUSDVal=0.0, TotalRealizedGain=0.0, TotalUnrealizedGain=0.0, BalanceThreshold=25.0, RebalanceTickSetting=1, OrderTimeout=1, OrderRetryAmount=3)
-            RebalanceTickModel.create(TickCount=0)
-            DatabaseManager.create_index_coin_model("BTC", float(100.0), 0.0,0.0, False)
-            DatabaseManager.create_realized_gain_model("BTC", 0.0)
-            
+            DatabaseManager.create_index_info_model(False, 0.0, 0.0, 25.0, 1, 3, 1)
+            DatabaseManager.create_rebalance_tick_model(0)
+            DatabaseManager.create_index_coin_model("BTC", float(100.0), 0.0, False)
+
         except Exception as e:
             #print e
             pass

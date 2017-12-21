@@ -66,12 +66,11 @@ class IndexCommandManager:
 
                     for iCoin in indexedCoins:
                         if iCoin.Locked != True:
-                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToRemove, iCoin.CurrentPercentage, iCoin.UnrealizedGain, iCoin.Locked)
+                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToRemove, iCoin.DistanceFromTarget, iCoin.Locked)
 
-                    if isinstance(float(percentage),(float,int,complex,long)):
-                        if DatabaseManager.create_index_coin_model(coin.upper(), float(percentage), 0.0,0.0, lockCoin):
+                    if isinstance(float(percentage), (float, int, complex, long)):
+                        if DatabaseManager.create_index_coin_model(coin.upper(), float(percentage), 0.0, lockCoin):
 
-                            DatabaseManager.create_realized_gain_model(coin.upper(), 0.0)
 
                             logger.info("Coin " + coin.upper() + " added to index")
                         else:
@@ -132,7 +131,7 @@ class IndexCommandManager:
                                 for iCoin in indexedCoins:
                                     if iCoin.Ticker != coin.upper():
                                         if iCoin.Locked != True:
-                                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToAdd, iCoin.CurrentPercentage, iCoin.UnrealizedGain, iCoin.Locked)
+                                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToAdd, iCoin.DistanceFromTarget, iCoin.Locked)
 
                                 if isinstance(float(percentage),(float,int,complex,long)):
                                     if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0,0.0, lockCoin):
@@ -190,7 +189,6 @@ class IndexCommandManager:
 
         if self.coin_supported_check(coin.upper()):
             if DatabaseManager.delete_index_coin_model(coin.upper()):
-                DatabaseManager.delete_realized_gain_model(coin.upper())
                 logger.info("Coin " + coin.upper() + " removed from index")
             else:
                 # Already Exist
@@ -211,17 +209,19 @@ class IndexCommandManager:
                 logger.error("Desired BTC Threshold Value Too Low - " + str(percentage))
             else:
                 DatabaseManager.update_index_info_model(indexInfo.Active, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
-                    indexInfo.TotalRealizedGain, indexInfo.TotalUnrealizedGain, round(float(percentage),2), indexInfo.OrderTimeout, 
-                    indexInfo.OrderRetryAmount, indexInfo.RebalanceTickSetting)
+                    round(float(percentage),2), indexInfo.OrderTimeout, indexInfo.OrderRetryAmount,
+                                                        indexInfo.RebalanceTickSetting)
                 logger.info("Index threshold set to " + str(round(float(percentage),2)))
         else:
             logger.warn("Percentage isn't a number")
 
     def index_rebalance_tick_update(self, tickcount):
+
+        indexInfo = DatabaseManager.get_index_info_model()
+
         if isinstance(int(tickcount),(float,int,complex,long)):
             DatabaseManager.update_index_info_model(indexInfo.Active, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
-                indexInfo.TotalRealizedGain, indexInfo.TotalUnrealizedGain, round(float(percentage),2), indexInfo.OrderTimeout, 
-                indexInfo.OrderRetryAmount, int(tickcount))
+                round(float(percentage),2), indexInfo.OrderTimeout, indexInfo.OrderRetryAmount, int(tickcount))
             logger.info("Index rebalance time set to " + str(tickcount) + " minutes.")
         else:
             logger.warn("Tick count isn't a number")
@@ -261,8 +261,8 @@ class IndexCommandManager:
                         app.send_task('Tasks.perform_buy_task', args=[iCoin.Ticker.upper(),amountToBuy])
 
             DatabaseManager.update_index_info_model(True, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
-             indexInfo.TotalRealizedGain, indexInfo.TotalUnrealizedGain, indexInfo.BalanceThreshold, indexInfo.OrderTimeout, 
-             indexInfo.OrderRetryAmount, indexInfo.RebalanceTickSetting)
+                                                    indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount,
+                                                    indexInfo.RebalanceTickSetting)
 
         else:
             logger.warn("Index is currently unbalanced please rebuild")

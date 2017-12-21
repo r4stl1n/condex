@@ -52,19 +52,19 @@ class ShowCommandManager:
         indexInfo = IndexInfoModel.get(id=1)
 
         # Create the Index Table
-        cointTableData =[['Coin', 'Amount', 'BTC Val', 'USD Val', 'Desired %', 'Locked', 'Active %', 'U Gain %', 'R Gain %']]
+        cointTableData =[['Coin', 'Amount', 'BTC Val', 'USD Val', 'Locked', 'Desired %', 'Current %', 'Distance From Target %']]
 
         for coin in IndexedCoinModel.select():
 
-            coinBalance = CoinBalanceModel.get(CoinBalanceModel.Coin==coin.Ticker)
-            realizedGainModel = DatabaseManager.get_realized_gain_model(coin.Ticker)
+            coinBalance = CoinBalanceModel.get(CoinBalanceModel.Coin == coin.Ticker)
 
-            newArray = [coin.Ticker, coinBalance.TotalCoins, coinBalance.BTCBalance, round(coinBalance.USDBalance,2), coin.DesiredPercentage, coin.Locked, coin.CurrentPercentage, coin.UnrealizedGain, realizedGainModel.RealizedGain, ]
+            newArray = [coin.Ticker, coinBalance.TotalCoins, coinBalance.BTCBalance, round(coinBalance.USDBalance, 2),
+                        coin.Locked, coin.DesiredPercentage, coinBalance.get_current_percentage(indexInfo.TotalBTCVal), coin.DistanceFromTarget]
             cointTableData.append(newArray)
 
         # Create the summary table
-        summary_table_data = [['Active', 'Index Count', 'BTC Val', 'USD Val', 'Unrealized Gain %', 'Realized Gain %']]
-        summary_table_data.append([True, len(IndexedCoinModel.select()), indexInfo.TotalBTCVal, indexInfo.TotalUSDVal, round(indexInfo.TotalUnrealizedGain,2), round(indexInfo.TotalRealizedGain,2)])
+        summary_table_data = [['Active', 'Index Count', 'BTC Val', 'USD Val',]]
+        summary_table_data.append([True, len(IndexedCoinModel.select()), indexInfo.TotalBTCVal, indexInfo.TotalUSDVal])
 
         coin_table = AsciiTable(cointTableData)
         summary_table = AsciiTable(summary_table_data)

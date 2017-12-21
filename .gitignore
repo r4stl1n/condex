@@ -109,3 +109,4 @@ venv.bak/
 celerybeat-schedule
 CondexConfig.py
 .vscode/settings.json
+.idea/*
