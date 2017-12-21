@@ -11,7 +11,6 @@ from models.CoinLockModel import CoinLockModel
 from models.IndexInfoModel import IndexInfoModel
 from models.IndexedCoinModel import IndexedCoinModel
 from models.CoinBalanceModel import CoinBalanceModel
-from models.RealizedGainModel import RealizedGainModel
 from models.RebalanceTickModel import RebalanceTickModel
 from models.SupportedCoinModel import SupportedCoinModel
 
@@ -127,13 +126,12 @@ class DatabaseManager:
             logger.exception(e)
 
     @staticmethod
-    def update_index_coin_model(ticker, desiredPercentage, currentPercentage, unRealizedGain, locked):
+    def update_index_coin_model(ticker, desiredPercentage, distanceFromTarget, locked):
 
         try:
-            indexedCoin = IndexedCoinModel.get(IndexedCoinModel.Ticker==ticker)
-            indexedCoin.DesiredPercentage = round(desiredPercentage,2)
-            indexedCoin.CurrentPercentage = round(currentPercentage,2)
-            indexedCoin.UnrealizedGain = round(unRealizedGain,2)
+            indexedCoin = IndexedCoinModel.get(IndexedCoinModel.Ticker == ticker)
+            indexedCoin.DesiredPercentage = round(desiredPercentage, 2)
+            indexedCoin.DistanceFromTarget = round(distanceFromTarget, 2)
             indexedCoin.Locked = locked
             indexedCoin.save()
             
@@ -145,9 +143,10 @@ class DatabaseManager:
             logger.exception(e)
 
     @staticmethod
-    def create_index_coin_model(ticker, desiredPercentage, currentPercentage, unRealizedGain, locked):
+    def create_index_coin_model(ticker, desiredPercentage, distanceFromTarget, locked):
         try:
-            IndexedCoinModel.create(Ticker=ticker, DesiredPercentage=round(desiredPercentage,2), CurrentPercentage=round(currentPercentage,2), UnrealizedGain=round(unRealizedGain,2), Locked=locked)
+            IndexedCoinModel.create(Ticker=ticker, DesiredPercentage=round(desiredPercentage, 2),
+                                    DistanceFromTarget=round(distanceFromTarget, 2), Locked=locked)
             return True
         except IntegrityError:
             return False
@@ -157,7 +156,7 @@ class DatabaseManager:
     @staticmethod
     def delete_index_coin_model(ticker):
         try:
-            indexCoinModel = IndexedCoinModel.get(IndexedCoinModel.Ticker==ticker)
+            indexCoinModel = IndexedCoinModel.get(IndexedCoinModel.Ticker == ticker)
             indexCoinModel.delete_instance()
             return True
         except Exception as e:
@@ -174,9 +173,24 @@ class DatabaseManager:
             #logger.exception(e)
             return None
 
+    @staticmethod
+    def create_index_info_model(active, totalBtcVal, totalUsdVal, balanceThreshold, orderTimeout, orderRetryAmount,
+                                rebalanceTickSetting):
+        try:
+            IndexInfoModel.create(Active=active, TotalBTCVal=totalBtcVal, TotalUSDVal=totalUsdVal,
+                                  BalanceThreshold=balanceThreshold, OrderTimeout=orderTimeout,
+                                  OrderRetryAmount=orderRetryAmount, RebalanceTickSetting=rebalanceTickSetting)
+            return True
+        except IntegrityError:
+            return False
+        except Exception as e:
+            logger.exception(e)
+
+
 
     @staticmethod
-    def update_index_info_model(active, totalBtcVal, totalUsdVal, totalRealizedGain, totalUnrealizedGain, balanceThreshold, orderTimeout, orderRetryAmount, rebalanceTickSetting):
+    def update_index_info_model(active, totalBtcVal, totalUsdVal, balanceThreshold, orderTimeout, orderRetryAmount,
+                                rebalanceTickSetting):
 
         try:
             indexInfo = IndexInfoModel.get(id=1)
@@ -184,8 +198,6 @@ class DatabaseManager:
             indexInfo.Active = active
             indexInfo.TotalBTCVal = round(totalBtcVal,8)
             indexInfo.TotalUSDVal = round(totalUsdVal,8)
-            indexInfo.TotalRealizedGain = round(totalRealizedGain, 8)
-            indexInfo.TotalUnrealizedGain = round(totalUnrealizedGain, 8)
             indexInfo.BalanceThreshold = balanceThreshold
             indexInfo.OrderTimeout = orderTimeout
             indexInfo.OrderRetryAmount = orderRetryAmount
@@ -195,6 +207,16 @@ class DatabaseManager:
 
             return True
 
+        except IntegrityError:
+            return False
+        except Exception as e:
+            logger.exception(e)
+
+    @staticmethod
+    def create_rebalance_tick_model(tickCount):
+        try:
+            RebalanceTickModel.create(TickCount=tickCount)
+            return True
         except IntegrityError:
             return False
         except Exception as e:
@@ -253,44 +275,3 @@ class DatabaseManager:
             # Model dosen't exist
             #logger.exception(e)
             return False
-
-    @staticmethod
-    def create_realized_gain_model(ticker, rGain):
-        try:
-            RealizedGainModel.create(Ticker=ticker, RealizedGain=rGain)
-            return True
-        except IntegrityError:
-            return False
-        except Exception as e:
-            logger.exception(e)
-
-    @staticmethod
-    def update_realized_gain_model(ticker, rGain):
-        try:
-            realizedGainModel = RealizedGainModel.get(RealizedGainModel.Ticker==ticker)
-            realizedGainModel.RealizedGain = round(rGain,2)
-            realizedGainModel.save()
-            return True
-        except IntegrityError:
-            return False
-        except Exception as e:
-            logger.exception(e)
-
-    @staticmethod
-    def delete_realized_gain_model(ticker):
-        try:
-            realizedGainModel = RealizedGainModel.get(RealizedGainModel.Ticker==ticker)
-            realizedGainModel.delete_instance()
-            return True
-        except Exception as e:
-            # Model dosen't exist
-            #logger.exception(e)
-            return False
-
-    @staticmethod
-    def get_realized_gain_model(ticker):
-        try:
-            realizedGainModel = RealizedGainModel.get(RealizedGainModel.Ticker==ticker)
-            return realizedGainModel
-        except Exception as e:
-            return None
