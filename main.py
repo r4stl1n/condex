@@ -92,8 +92,15 @@ class ConDex(cmd.Cmd):
                 icm.index_threshold_update(command_split[1])
             elif command_split[0] == 'rtime':
                 icm.index_rebalance_tick_update(command_split[1])
-            elif command_split[0] == 'start':
+            else:
+                logger.warn("Unknown Command")
+        elif len(command_split) >= 1:
+            if command_split[0] == 'start':
                 icm.index_start_command()
+            elif command_split[0] == 'gen':
+                icm.index_gen_command()
+            elif command_split[0] == 'stop':
+                icm.index_stop_command()
             else:
                 logger.warn("Unknown Command")
         else:

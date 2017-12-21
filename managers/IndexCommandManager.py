@@ -227,6 +227,20 @@ class IndexCommandManager:
             logger.warn("Tick count isn't a number")
 
     def index_start_command(self):
+        indexInfo = DatabaseManager.get_index_info_model()
+        DatabaseManager.update_index_info_model(True, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
+                                                indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount,
+                                                indexInfo.RebalanceTickSetting)
+        logger.info("Index Management Started.")
+    
+    def index_stop_command(self):
+        indexInfo = DatabaseManager.get_index_info_model()
+        DatabaseManager.update_index_info_model(False, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
+                                                indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount,
+                                                indexInfo.RebalanceTickSetting)
+        logger.info("Index Management Stopped.")
+
+    def index_gen_command(self):
         
         totalIndexPercentage = 0.0
         indexInfo = DatabaseManager.get_index_info_model()
@@ -243,15 +257,11 @@ class IndexCommandManager:
                     
                     coinTicker = DatabaseManager.get_ticker_model(iCoin.Ticker.upper() + "/BTC")
 
-                    sys.stdout.write(coinTicker)
-                    sys.stdout.write(iCoin.Ticker)
-                    sys.stdout.write('\n')
                     percentage_btc_amount = (indexInfo.TotalBTCVal/100)*iCoin.DesiredPercentage
                     
                     amountToBuy = percentage_btc_amount / coinTicker.BTCVal
 
                     logger.debug("Percentage_to_btc_amount: " + str(percentage_btc_amount))
-
 
                     if percentage_btc_amount <= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT:
                         logger.debug("Current BTC Threshold Value To Low - " + str(percentage_btc_amount))
