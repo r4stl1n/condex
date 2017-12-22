@@ -101,9 +101,15 @@ Only the celery task is required for your index to continue to be managed. The c
 	Change the frequency the index performs a rebalance 
 		tickcount - number (in minutes) between each rebalance
 
->index start now
+>index start 
 
-	Start the index process and buy all the required amounts of coins to match the desired percentages
+	Start the index process
+
+>index stop
+	Stops the index process
+
+>index gen
+	Starts the index process and buys all the required amounts of coins to match the desired percentages
 
 ##### Debug Commands - The below functions are run automatically within the Celery task processes and are not required during normal usage of the index.
 
