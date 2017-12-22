@@ -161,7 +161,7 @@ class IndexCommandManager:
                             for iCoin in indexedCoins:
                                 if iCoin.Ticker != coin.upper():
                                     if iCoin.Locked != True:
-                                        DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage+percentageToAdd, iCoin.CurrentPercentage, iCoin.UnrealizedGain, iCoin.Locked)
+                                        DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage+percentageToAdd, iCoin.DistanceFromTarget, iCoin.Locked)
 
                             if isinstance(float(percentage),(float,int,complex,long)):
 
