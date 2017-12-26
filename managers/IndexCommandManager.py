@@ -1,5 +1,6 @@
 import sys
 import json
+import jsonpickle
 import ccxt
 import time
 from logzero import logger
@@ -46,46 +47,41 @@ class IndexCommandManager:
             lockCoin = True
         
 
-        percentage_btc_amount = indexInfo.TotalBTCVal*(float(percentage)/100)
 
-        if percentage_btc_amount >= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT:
+        for inCoins in indexedCoins:
 
-            for inCoins in indexedCoins:
-
-                if inCoins.Locked == True:
-                    totalLockedPercentage = totalLockedPercentage + inCoins.DesiredPercentage
-                else:
-                    totalUnlockedPercentage = totalUnlockedPercentage + inCoins.DesiredPercentage
-                    totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
-
-            if totalUnlockedPercentage > float(percentage):
-
-                if self.coin_supported_check(coin.upper()):
-
-                    percentageToRemove = float(percentage)/totalUnlockedCoinsCount
-
-                    for iCoin in indexedCoins:
-                        if iCoin.Locked != True:
-                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToRemove, iCoin.DistanceFromTarget, iCoin.Locked)
-
-                    if isinstance(float(percentage), (float, int, complex, long)):
-                        if DatabaseManager.create_index_coin_model(coin.upper(), float(percentage), 0.0, lockCoin):
-
-
-                            logger.info("Coin " + coin.upper() + " added to index")
-                        else:
-                            # Already Exist
-                            logger.warn("Coin already in index")
-                    else:
-                        logger.warn("Percentage isn't a number")
-
-                else:
-                    logger.warn("Coin not supported")
+            if inCoins.Locked == True:
+                totalLockedPercentage = totalLockedPercentage + inCoins.DesiredPercentage
             else:
-                logger.warn("Not Enough Unlocked Percentage")
+                totalUnlockedPercentage = totalUnlockedPercentage + inCoins.DesiredPercentage
+                totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
 
+        if totalUnlockedPercentage > float(percentage):
+
+            if self.coin_supported_check(coin.upper()):
+
+                percentageToRemove = float(percentage)/totalUnlockedCoinsCount
+
+                for iCoin in indexedCoins:
+                    if iCoin.Locked != True:
+                        DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToRemove, iCoin.DistanceFromTarget, iCoin.Locked)
+
+                if isinstance(float(percentage), (float, int, complex, int)):
+                    if DatabaseManager.create_index_coin_model(coin.upper(), float(percentage), 0.0, lockCoin):
+
+
+                        logger.info("Coin " + coin.upper() + " added to index")
+                    else:
+                        # Already Exist
+                        logger.warn("Coin already in index")
+                else:
+                    logger.warn("Percentage isn't a number")
+
+            else:
+                logger.warn("Coin not supported")
         else:
-            logger.warn("Specified percentage below current bittrex trade value")
+            logger.warn("Not Enough Unlocked Percentage")
+
 
     def index_update_coin(self, coin, percentage, locked):
 
@@ -133,7 +129,7 @@ class IndexCommandManager:
                                         if iCoin.Locked != True:
                                             DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToAdd, iCoin.DistanceFromTarget, iCoin.Locked)
 
-                                if isinstance(float(percentage),(float,int,complex,long)):
+                                if isinstance(float(percentage),(float,int,complex,int)):
                                     if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0,0.0, lockCoin):
 
                                         logger.info("Coin " + coin.upper() + " updated in index")
@@ -163,7 +159,7 @@ class IndexCommandManager:
                                     if iCoin.Locked != True:
                                         DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage+percentageToAdd, iCoin.DistanceFromTarget, iCoin.Locked)
 
-                            if isinstance(float(percentage),(float,int,complex,long)):
+                            if isinstance(float(percentage),(float,int,complex,int)):
 
                                 if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0,0.0, lockCoin):
 
@@ -199,7 +195,7 @@ class IndexCommandManager:
 
     def index_threshold_update(self, percentage):
 
-        if isinstance(float(percentage),(float,int,complex,long)):
+        if isinstance(float(percentage),(float,int,complex,int)):
 
             indexInfo = DatabaseManager.get_index_info_model()
 
@@ -219,7 +215,7 @@ class IndexCommandManager:
 
         indexInfo = DatabaseManager.get_index_info_model()
 
-        if isinstance(int(tickcount),(float,int,complex,long)):
+        if isinstance(int(tickcount),(float,int,complex,int)):
             DatabaseManager.update_index_info_model(indexInfo.Active, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
                 round(float(percentage),2), indexInfo.OrderTimeout, indexInfo.OrderRetryAmount, int(tickcount))
             logger.info("Index rebalance time set to " + str(tickcount) + " minutes.")
@@ -278,4 +274,34 @@ class IndexCommandManager:
             logger.warn("Index is currently unbalanced please rebuild")
 
 
+    def export_index(self):
+        """Export the index to a JSON file."""
+        indexInfo = DatabaseManager.get_all_index_coin_models()
+        indexJson = "["
 
+        coins = []
+        for coin in indexInfo:
+            coins.append(jsonpickle.encode(coin))
+        
+        indexJson += ",".join(coins)
+        indexJson += "]"
+
+        with open("index.json", "w") as file_object:
+            file_object.write(indexJson)
+
+        logger.info("Index exported to index.json")
+
+    def import_index(self):
+        """Destructively create the index from a JSON file."""
+        coins = DatabaseManager.get_all_index_coin_models()
+        for coin in coins:
+            DatabaseManager.delete_index_coin_model(coin.Ticker)
+        
+        indexed_coins = ""
+        with open("index.json", "r") as file_obj:
+            indexed_coins = jsonpickle.decode(file_obj.read())
+
+        for coin in indexed_coins:
+            DatabaseManager.create_index_coin_model(coin.Ticker, coin.DesiredPercentage, coin.DistanceFromTarget, coin.Locked)
+
+        logger.info("Index imported from index.json")

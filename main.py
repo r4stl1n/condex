@@ -101,6 +101,10 @@ class ConDex(cmd.Cmd):
                 icm.index_gen_command()
             elif command_split[0] == 'stop':
                 icm.index_stop_command()
+            elif command_split[0] == 'export':
+                icm.export_index()
+            elif command_split[0] == 'import':
+                icm.import_index()
             else:
                 logger.warn("Unknown Command")
         else:
