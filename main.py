@@ -79,6 +79,8 @@ class ConDex(cmd.Cmd):
             if command_split[0] == "add":
                 if len(command_split) == 4:
                     icm.index_add_coin(command_split[1],command_split[2], command_split[3])
+                elif len(command_split) == 3:
+                    icm.index_add_coin(command_split[1],command_split[2], False)
                 else:
                     logger.warn("Not Enough Parameters")
             elif command_split[0] == "update":
