@@ -305,3 +305,18 @@ class IndexCommandManager:
             DatabaseManager.create_index_coin_model(coin.Ticker, coin.DesiredPercentage, coin.DistanceFromTarget, coin.Locked)
 
         logger.info("Index imported from index.json")
+
+    def lock_coin(self, ticker):
+        self.lock_unlock_coin(ticker, True)
+        logger.info("%s locked", ticker)
+
+    def unlock_coin(self, ticker):
+        self.lock_unlock_coin(ticker, False)
+        logger.info("%s unlocked", ticker)
+
+    def lock_unlock_coin(self, ticker, is_lock):
+        coin = DatabaseManager.get_index_coin_model(ticker)
+        coin.Locked = is_lock
+
+        DatabaseManager.update_index_coin_object(coin)
+
