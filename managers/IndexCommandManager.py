@@ -182,6 +182,9 @@ class IndexCommandManager:
 
 
     def index_remove_coin(self, coin):
+        if (coin.upper() == "BTC"):
+            logger.warn("You cannot remove BTC from your index.")
+            return
 
         if self.coin_supported_check(coin.upper()):
             if DatabaseManager.delete_index_coin_model(coin.upper()):
