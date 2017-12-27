@@ -319,7 +319,7 @@ class IndexCommandManager:
     def lock_unlock_coin(self, ticker, is_lock):
         coin = DatabaseManager.get_index_coin_model(ticker)
         if coin is None:
-            logger.info("%s is not currently in your index. Use index add functionality to add it.", ticker)
+            logger.error("%s is not currently in your index. Use index add functionality to add it.", ticker)
             return
         coin.Locked = is_lock
 

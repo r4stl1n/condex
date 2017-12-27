@@ -100,5 +100,5 @@ class ShowCommandManager:
 
         sys.stdout.write("\n")
         for line in  pyGraph.graph('Index Distribution', data=data):
-            sys.stdout.write(line)
+            sys.stdout.write(line + "\n")
         sys.stdout.write("\n")

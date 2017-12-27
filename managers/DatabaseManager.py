@@ -126,6 +126,10 @@ class DatabaseManager:
             logger.exception(e)
 
     @staticmethod
+    def update_index_coin_object(model):
+        return DatabaseManager.update_index_coin_model(model.Ticker, model.DesiredPercentage, model.DistanceFromTarget, model.Locked)
+
+    @staticmethod
     def update_index_coin_model(ticker, desiredPercentage, distanceFromTarget, locked):
 
         try:
