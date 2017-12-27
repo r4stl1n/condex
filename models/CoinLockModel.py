@@ -4,4 +4,4 @@ from models.BaseModel import BaseModel
 
 class CoinLockModel(BaseModel):
 
-    Ticker = CharField(unique=True)
+    Ticker = CharField(unique=True, max_length=64)
