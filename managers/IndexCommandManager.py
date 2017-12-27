@@ -31,7 +31,7 @@ class IndexCommandManager:
         except:
             return False
 
-    def index_add_coin(self, coin, percentage, locked):
+    def index_add_coin(self, coin, percentage, locked = False):
 
         lockCoin = False
 
