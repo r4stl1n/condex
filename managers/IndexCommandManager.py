@@ -32,7 +32,7 @@ class IndexCommandManager:
         except:
             return False
 
-    def index_add_coin(self, coin, percentage, locked):
+    def index_add_coin(self, coin, percentage = 1.0, locked = False):
 
         lockCoin = False
 
@@ -55,7 +55,6 @@ class IndexCommandManager:
             else:
                 totalUnlockedPercentage = totalUnlockedPercentage + inCoins.DesiredPercentage
                 totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
-
         if totalUnlockedPercentage > float(percentage):
 
             if self.coin_supported_check(coin.upper()):
@@ -272,6 +271,37 @@ class IndexCommandManager:
 
         else:
             logger.warn("Index is currently unbalanced please rebuild")
+
+    def index_equal_weight(self):
+        """Set portfolio to equal weight"""        
+
+        totalPercentage = 0
+        totalLockedPercentage = 0.0
+        totalUnlockedPercentage = 100
+        totalUnlockedCoinsCount = 0
+        averagePercentage = 0
+
+        indexInfo = DatabaseManager.get_index_info_model()
+        indexedCoins = DatabaseManager.get_all_index_coin_models()
+        
+        for inCoins in indexedCoins:
+            if inCoins.Locked == True:
+                totalLockedPercentage = totalLockedPercentage + inCoins.DesiredPercentage
+            else:
+                totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
+        
+        totalPercentage = totalPercentage + totalLockedPercentage
+        totalUnlockedPercentage = totalUnlockedPercentage - totalLockedPercentage
+        averagePercentage = round(totalUnlockedPercentage / totalUnlockedCoinsCount, 2)
+       
+        for inCoins in indexedCoins:
+            if inCoins.Locked == False:
+                totalPercentage = totalPercentage + averagePercentage
+                if totalPercentage > 100:
+                   percentageDifference = totalPercentage - 100 
+                else:
+                   percentageDifference = 0
+                DatabaseManager.update_index_coin_model(inCoins.Ticker, float(averagePercentage - percentageDifference), 0.0, False)
 
 
     def export_index(self):

@@ -77,7 +77,11 @@ class ConDex(cmd.Cmd):
 
         if len(command_split) >= 2:
             if command_split[0] == "add":
-                if len(command_split) == 4:
+                if len(command_split) == 2:
+                    icm.index_add_coin(command_split[1])
+                elif len(command_split) == 3:
+                    icm.index_add_coin(command_split[1],command_split[2])
+                elif len(command_split) == 4:
                     icm.index_add_coin(command_split[1],command_split[2], command_split[3])
                 else:
                     logger.warn("Not Enough Parameters")
@@ -105,6 +109,8 @@ class ConDex(cmd.Cmd):
                 icm.export_index()
             elif command_split[0] == 'import':
                 icm.import_index()
+            elif command_split[0] == 'equalweight':
+                icm.index_equal_weight()
             else:
                 logger.warn("Unknown Command")
         else:
