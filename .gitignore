@@ -110,3 +110,4 @@ celerybeat-schedule
 CondexConfig.py
 .vscode/settings.json
 .idea/*
+index.json
