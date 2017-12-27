@@ -129,8 +129,8 @@ class IndexCommandManager:
                                         if iCoin.Locked != True:
                                             DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToAdd, iCoin.DistanceFromTarget, iCoin.Locked)
 
-                                if isinstance(float(percentage),(float,int,complex,int)):
-                                    if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0,0.0, lockCoin):
+                                if isinstance(float(percentage),(float,int,complex,long)):
+                                    if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0, lockCoin):
 
                                         logger.info("Coin " + coin.upper() + " updated in index")
                                     else:
@@ -161,7 +161,7 @@ class IndexCommandManager:
 
                             if isinstance(float(percentage),(float,int,complex,int)):
 
-                                if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0,0.0, lockCoin):
+                                if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0, lockCoin):
 
                                     logger.info("Coin " + coin.upper() + " updated in index")
                                 else:
