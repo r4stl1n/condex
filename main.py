@@ -88,6 +88,10 @@ class ConDex(cmd.Cmd):
                     logger.warn("Not Enough Parameters")             
             elif command_split[0] == "remove":
                 icm.index_remove_coin(command_split[1])
+            elif command_split[0] == "lock":
+                icm.lock_coin(command_split[1])
+            elif command_split[0] == "unlock":
+                icm.unlock_coin(command_split[1])
             elif command_split[0] == 'threshold':
                 icm.index_threshold_update(command_split[1])
             elif command_split[0] == 'rtime':
