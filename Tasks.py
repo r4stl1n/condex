@@ -38,6 +38,8 @@ app.conf.update(
     }
 )
 
+TASK_MICRO_SLEEP_MS = 0.01
+
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     Util.bootstrap()
@@ -84,7 +86,7 @@ def supported_coins_task():
             else:
                 logger.error("Failed To Update Ticker Model - " + key)
 
-        time.sleep(0.01)
+        time.sleep(TASK_MICRO_SLEEP_MS)
 
     logger.info("Coins Update Task Completed")
 
@@ -144,7 +146,7 @@ def wallet_update_task():
             else:
                 logger.error("Failed Update Coin Balance Model - " + key.Ticker)
 
-        time.sleep(0.01)
+        time.sleep(TASK_MICRO_SLEEP_MS)
 
     totalUnrealizedGain = 0.0
     totalRealizedGain = 0.0
@@ -167,7 +169,7 @@ def wallet_update_task():
             else:
                 logger.error("Failed To Update Indexed Coin Model - " + indexedCoin.Ticker)
 
-        time.sleep(0.01)
+        time.sleep(TASK_MICRO_SLEEP_MS)
 
 
 
