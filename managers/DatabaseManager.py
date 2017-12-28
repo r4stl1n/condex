@@ -23,7 +23,7 @@ class DatabaseManager:
     @staticmethod
     def create_supported_coin_model(ticker):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 SupportedCoinModel.create(Ticker=ticker)
             return True
         except IntegrityError:
@@ -41,7 +41,7 @@ class DatabaseManager:
     @staticmethod
     def create_ticker_model(ticker, btcVal, usdVal, lastUpdated):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 TickerModel.create(Ticker=ticker, BTCVal=round(btcVal,8), USDVal=round(usdVal,8), LastUpdated=lastUpdated)
             return True
         except IntegrityError:
@@ -52,7 +52,7 @@ class DatabaseManager:
     @staticmethod
     def update_ticker_model(ticker, btcVal, usdVal, lastUpdated):
         try:      
-            with internal_database.transaction():
+            with internal_database.atomic():
                 tickerModel = TickerModel.get(TickerModel.Ticker == ticker)
                 tickerModel.BTCVal = round(btcVal,8)
                 tickerModel.USDVal = round(usdVal,8)
@@ -75,7 +75,7 @@ class DatabaseManager:
     @staticmethod
     def create_coin_balance_model(ticker, btcBalance, usdBalalnce, totalCoins, lastUpdate):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 CoinBalanceModel.create(Coin=ticker, PriorBTCBalance = round(btcBalance,8), BTCBalance=round(btcBalance,8), USDBalance=round(usdBalalnce,8), TotalCoins=round(totalCoins,8), LastUpdated=lastUpdate)
             return True
         except IntegrityError:
@@ -86,7 +86,7 @@ class DatabaseManager:
     @staticmethod
     def update_coin_balance_model(ticker, btcBalance, usdBalalnce, totalCoins, lastUpdate):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 coinBalanceModel = CoinBalanceModel.get(CoinBalanceModel.Coin == ticker)
 
                 coinBalanceModel.PriorBTCBalance = coinBalanceModel.BTCBalance
@@ -136,7 +136,7 @@ class DatabaseManager:
     def update_index_coin_model(ticker, desiredPercentage, distanceFromTarget, locked):
 
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 indexedCoin = IndexedCoinModel.get(IndexedCoinModel.Ticker == ticker)
                 indexedCoin.DesiredPercentage = round(desiredPercentage, 2)
                 indexedCoin.DistanceFromTarget = round(distanceFromTarget, 2)
@@ -153,7 +153,7 @@ class DatabaseManager:
     @staticmethod
     def create_index_coin_model(ticker, desiredPercentage, distanceFromTarget, locked):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 IndexedCoinModel.create(Ticker=ticker, DesiredPercentage=round(desiredPercentage, 2),
                                         DistanceFromTarget=round(distanceFromTarget, 2), Locked=locked)
             return True
@@ -165,7 +165,7 @@ class DatabaseManager:
     @staticmethod
     def delete_index_coin_model(ticker):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 indexCoinModel = IndexedCoinModel.get(IndexedCoinModel.Ticker == ticker)
                 indexCoinModel.delete_instance()
             return True
@@ -187,7 +187,7 @@ class DatabaseManager:
     def create_index_info_model(active, totalBtcVal, totalUsdVal, balanceThreshold, orderTimeout, orderRetryAmount,
                                 rebalanceTickSetting):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 IndexInfoModel.create(Active=active, TotalBTCVal=totalBtcVal, TotalUSDVal=totalUsdVal,
                                       BalanceThreshold=balanceThreshold, OrderTimeout=orderTimeout,
                                       OrderRetryAmount=orderRetryAmount, RebalanceTickSetting=rebalanceTickSetting)
@@ -204,7 +204,7 @@ class DatabaseManager:
                                 rebalanceTickSetting):
 
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 indexInfo = IndexInfoModel.get(id=1)
 
                 indexInfo.Active = active
@@ -227,7 +227,7 @@ class DatabaseManager:
     @staticmethod
     def create_rebalance_tick_model(tickCount):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 RebalanceTickModel.create(TickCount=tickCount)
             return True
         except IntegrityError:
@@ -247,7 +247,7 @@ class DatabaseManager:
     @staticmethod
     def update_rebalance_tick_model(tickCount):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 rebalanceTick = RebalanceTickModel.get(id=1)
                 rebalanceTick.TickCount = tickCount
                 rebalanceTick.save()
@@ -271,7 +271,7 @@ class DatabaseManager:
     @staticmethod
     def create_coin_lock_model(ticker):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 CoinLockModel.create(Ticker=ticker)
             return True
         except IntegrityError:
@@ -282,7 +282,7 @@ class DatabaseManager:
     @staticmethod
     def delete_coin_lock_model(ticker):
         try:
-            with internal_database.transaction():
+            with internal_database.atomic():
                 coinLockModel = CoinLockModel.get(CoinLockModel.Ticker==ticker)
                 coinLockModel.delete_instance()
             return True
