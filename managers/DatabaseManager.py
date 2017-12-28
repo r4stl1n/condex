@@ -23,7 +23,8 @@ class DatabaseManager:
     @staticmethod
     def create_supported_coin_model(ticker):
         try:
-            SupportedCoinModel.create(Ticker=ticker)
+            with internal_database.transaction():
+                SupportedCoinModel.create(Ticker=ticker)
             return True
         except IntegrityError:
             return False
@@ -40,7 +41,8 @@ class DatabaseManager:
     @staticmethod
     def create_ticker_model(ticker, btcVal, usdVal, lastUpdated):
         try:
-            TickerModel.create(Ticker=ticker, BTCVal=round(btcVal,8), USDVal=round(usdVal,8), LastUpdated=lastUpdated)
+            with internal_database.transaction():
+                TickerModel.create(Ticker=ticker, BTCVal=round(btcVal,8), USDVal=round(usdVal,8), LastUpdated=lastUpdated)
             return True
         except IntegrityError:
             return False
@@ -50,12 +52,12 @@ class DatabaseManager:
     @staticmethod
     def update_ticker_model(ticker, btcVal, usdVal, lastUpdated):
         try:      
-            
-            tickerModel = TickerModel.get(TickerModel.Ticker == ticker)
-            tickerModel.BTCVal = round(btcVal,8)
-            tickerModel.USDVal = round(usdVal,8)
-            tickerModel.LastUpdated = lastUpdated
-            tickerModel.save()
+            with internal_database.transaction():
+                tickerModel = TickerModel.get(TickerModel.Ticker == ticker)
+                tickerModel.BTCVal = round(btcVal,8)
+                tickerModel.USDVal = round(usdVal,8)
+                tickerModel.LastUpdated = lastUpdated
+                tickerModel.save()
             return True
         except Exception as e:
             logger.exception(e)
@@ -73,7 +75,8 @@ class DatabaseManager:
     @staticmethod
     def create_coin_balance_model(ticker, btcBalance, usdBalalnce, totalCoins, lastUpdate):
         try:
-            CoinBalanceModel.create(Coin=ticker, PriorBTCBalance = round(btcBalance,8), BTCBalance=round(btcBalance,8), USDBalance=round(usdBalalnce,8), TotalCoins=round(totalCoins,8), LastUpdated=lastUpdate)
+            with internal_database.transaction():
+                CoinBalanceModel.create(Coin=ticker, PriorBTCBalance = round(btcBalance,8), BTCBalance=round(btcBalance,8), USDBalance=round(usdBalalnce,8), TotalCoins=round(totalCoins,8), LastUpdated=lastUpdate)
             return True
         except IntegrityError:
             return False
@@ -83,16 +86,16 @@ class DatabaseManager:
     @staticmethod
     def update_coin_balance_model(ticker, btcBalance, usdBalalnce, totalCoins, lastUpdate):
         try:
+            with internal_database.transaction():
+                coinBalanceModel = CoinBalanceModel.get(CoinBalanceModel.Coin == ticker)
 
-            coinBalanceModel = CoinBalanceModel.get(CoinBalanceModel.Coin == ticker)
+                coinBalanceModel.PriorBTCBalance = coinBalanceModel.BTCBalance
+                coinBalanceModel.BTCBalance = round(btcBalance,8)
+                coinBalanceModel.USDBalance = round(usdBalalnce,8)
+                coinBalanceModel.TotalCoins = round(totalCoins,8)
+                coinBalanceModel.LastUpdated = lastUpdate
 
-            coinBalanceModel.PriorBTCBalance = coinBalanceModel.BTCBalance
-            coinBalanceModel.BTCBalance = round(btcBalance,8)
-            coinBalanceModel.USDBalance = round(usdBalalnce,8)
-            coinBalanceModel.TotalCoins = round(totalCoins,8)
-            coinBalanceModel.LastUpdated = lastUpdate
-
-            coinBalanceModel.save()
+                coinBalanceModel.save()
             return True
 
         except IntegrityError:
@@ -133,11 +136,12 @@ class DatabaseManager:
     def update_index_coin_model(ticker, desiredPercentage, distanceFromTarget, locked):
 
         try:
-            indexedCoin = IndexedCoinModel.get(IndexedCoinModel.Ticker == ticker)
-            indexedCoin.DesiredPercentage = round(desiredPercentage, 2)
-            indexedCoin.DistanceFromTarget = round(distanceFromTarget, 2)
-            indexedCoin.Locked = locked
-            indexedCoin.save()
+            with internal_database.transaction():
+                indexedCoin = IndexedCoinModel.get(IndexedCoinModel.Ticker == ticker)
+                indexedCoin.DesiredPercentage = round(desiredPercentage, 2)
+                indexedCoin.DistanceFromTarget = round(distanceFromTarget, 2)
+                indexedCoin.Locked = locked
+                indexedCoin.save()
             
             return True
 
@@ -149,8 +153,9 @@ class DatabaseManager:
     @staticmethod
     def create_index_coin_model(ticker, desiredPercentage, distanceFromTarget, locked):
         try:
-            IndexedCoinModel.create(Ticker=ticker, DesiredPercentage=round(desiredPercentage, 2),
-                                    DistanceFromTarget=round(distanceFromTarget, 2), Locked=locked)
+            with internal_database.transaction():
+                IndexedCoinModel.create(Ticker=ticker, DesiredPercentage=round(desiredPercentage, 2),
+                                        DistanceFromTarget=round(distanceFromTarget, 2), Locked=locked)
             return True
         except IntegrityError:
             return False
@@ -160,8 +165,9 @@ class DatabaseManager:
     @staticmethod
     def delete_index_coin_model(ticker):
         try:
-            indexCoinModel = IndexedCoinModel.get(IndexedCoinModel.Ticker == ticker)
-            indexCoinModel.delete_instance()
+            with internal_database.transaction():
+                indexCoinModel = IndexedCoinModel.get(IndexedCoinModel.Ticker == ticker)
+                indexCoinModel.delete_instance()
             return True
         except Exception as e:
             # Model dosen't exist
@@ -181,9 +187,10 @@ class DatabaseManager:
     def create_index_info_model(active, totalBtcVal, totalUsdVal, balanceThreshold, orderTimeout, orderRetryAmount,
                                 rebalanceTickSetting):
         try:
-            IndexInfoModel.create(Active=active, TotalBTCVal=totalBtcVal, TotalUSDVal=totalUsdVal,
-                                  BalanceThreshold=balanceThreshold, OrderTimeout=orderTimeout,
-                                  OrderRetryAmount=orderRetryAmount, RebalanceTickSetting=rebalanceTickSetting)
+            with internal_database.transaction():
+                IndexInfoModel.create(Active=active, TotalBTCVal=totalBtcVal, TotalUSDVal=totalUsdVal,
+                                      BalanceThreshold=balanceThreshold, OrderTimeout=orderTimeout,
+                                      OrderRetryAmount=orderRetryAmount, RebalanceTickSetting=rebalanceTickSetting)
             return True
         except IntegrityError:
             return False
@@ -197,17 +204,18 @@ class DatabaseManager:
                                 rebalanceTickSetting):
 
         try:
-            indexInfo = IndexInfoModel.get(id=1)
+            with internal_database.transaction():
+                indexInfo = IndexInfoModel.get(id=1)
 
-            indexInfo.Active = active
-            indexInfo.TotalBTCVal = round(totalBtcVal,8)
-            indexInfo.TotalUSDVal = round(totalUsdVal,8)
-            indexInfo.BalanceThreshold = balanceThreshold
-            indexInfo.OrderTimeout = orderTimeout
-            indexInfo.OrderRetryAmount = orderRetryAmount
-            indexInfo.RebalanceTickSetting = rebalanceTickSetting
+                indexInfo.Active = active
+                indexInfo.TotalBTCVal = round(totalBtcVal,8)
+                indexInfo.TotalUSDVal = round(totalUsdVal,8)
+                indexInfo.BalanceThreshold = balanceThreshold
+                indexInfo.OrderTimeout = orderTimeout
+                indexInfo.OrderRetryAmount = orderRetryAmount
+                indexInfo.RebalanceTickSetting = rebalanceTickSetting
 
-            indexInfo.save()
+                indexInfo.save()
 
             return True
 
@@ -219,7 +227,8 @@ class DatabaseManager:
     @staticmethod
     def create_rebalance_tick_model(tickCount):
         try:
-            RebalanceTickModel.create(TickCount=tickCount)
+            with internal_database.transaction():
+                RebalanceTickModel.create(TickCount=tickCount)
             return True
         except IntegrityError:
             return False
@@ -238,10 +247,10 @@ class DatabaseManager:
     @staticmethod
     def update_rebalance_tick_model(tickCount):
         try:
-
-            rebalanceTick = RebalanceTickModel.get(id=1)
-            rebalanceTick.TickCount = tickCount
-            rebalanceTick.save()
+            with internal_database.transaction():
+                rebalanceTick = RebalanceTickModel.get(id=1)
+                rebalanceTick.TickCount = tickCount
+                rebalanceTick.save()
 
             return True
 
@@ -262,7 +271,8 @@ class DatabaseManager:
     @staticmethod
     def create_coin_lock_model(ticker):
         try:
-            CoinLockModel.create(Ticker=ticker)
+            with internal_database.transaction():
+                CoinLockModel.create(Ticker=ticker)
             return True
         except IntegrityError:
             return False
@@ -272,8 +282,9 @@ class DatabaseManager:
     @staticmethod
     def delete_coin_lock_model(ticker):
         try:
-            coinLockModel = CoinLockModel.get(CoinLockModel.Ticker==ticker)
-            coinLockModel.delete_instance()
+            with internal_database.transaction():
+                coinLockModel = CoinLockModel.get(CoinLockModel.Ticker==ticker)
+                coinLockModel.delete_instance()
             return True
         except Exception as e:
             # Model dosen't exist
