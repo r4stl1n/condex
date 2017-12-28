@@ -326,3 +326,34 @@ class IndexCommandManager:
         DatabaseManager.update_index_coin_object(coin)
         logger.info("%s %s", ticker, "locked" if is_lock else "unlocked")
 
+    def index_equal_weight(self):
+        """Set portfolio to equal weight"""
+
+        totalPercentage = 0
+        totalLockedPercentage = 0.0
+        totalUnlockedPercentage = 100
+        totalUnlockedCoinsCount = 0
+        averagePercentage = 0
+
+        indexInfo = DatabaseManager.get_index_info_model()
+        indexedCoins = DatabaseManager.get_all_index_coin_models()
+
+        for inCoins in indexedCoins:
+            if inCoins.Locked == True:
+                totalLockedPercentage = totalLockedPercentage + inCoins.DesiredPercentage
+            else:
+                totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
+
+        totalPercentage = totalPercentage + totalLockedPercentage
+        totalUnlockedPercentage = totalUnlockedPercentage - totalLockedPercentage
+        averagePercentage = round(totalUnlockedPercentage / totalUnlockedCoinsCount, 2)
+
+        logger.info("Setting default allocation to " + str(averagePercentage))
+        for inCoins in indexedCoins:
+            if inCoins.Locked == False:
+                totalPercentage = totalPercentage + averagePercentage
+                if totalPercentage > 100:
+                   percentageDifference = totalPercentage - 100
+                else:
+                   percentageDifference = 0
+                DatabaseManager.update_index_coin_model(inCoins.Ticker, float(averagePercentage - percentageDifference), 0.0, False)
