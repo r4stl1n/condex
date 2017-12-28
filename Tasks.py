@@ -38,6 +38,8 @@ app.conf.update(
     }
 )
 
+TASK_MICRO_SLEEP_MS = 0.01
+
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     Util.bootstrap()
@@ -83,6 +85,8 @@ def supported_coins_task():
                 pass
             else:
                 logger.error("Failed To Update Ticker Model - " + key)
+
+        time.sleep(TASK_MICRO_SLEEP_MS)
 
     logger.info("Coins Update Task Completed")
 
@@ -142,6 +146,8 @@ def wallet_update_task():
             else:
                 logger.error("Failed Update Coin Balance Model - " + key.Ticker)
 
+        time.sleep(TASK_MICRO_SLEEP_MS)
+
     totalUnrealizedGain = 0.0
     totalRealizedGain = 0.0
     
@@ -163,6 +169,8 @@ def wallet_update_task():
             else:
                 logger.error("Failed To Update Indexed Coin Model - " + indexedCoin.Ticker)
 
+        time.sleep(TASK_MICRO_SLEEP_MS)
+
 
 
     indexInfo = DatabaseManager.get_index_info_model()
@@ -175,6 +183,8 @@ def wallet_update_task():
         logger.error("Failed To Update Index Info Model")
 
     logger.info("Wallet Update Task Completed")
+
+    time.sleep(0.01)
 
 
 @app.task(name='Tasks.increment_rebalance_tick_task')
@@ -265,7 +275,9 @@ def perform_algo_task():
                                     amountOfEligbleToBuy = percentage_btc_amount / elgibleCoinTickerModel.BTCVal
 
                                 if coinBalance.TotalCoins >= amountOfRebalanceToSell:
+
                                     DatabaseManager.create_coin_lock_model(akey)
+                                    
                                     DatabaseManager.create_coin_lock_model(elgibleCoinTicker)
 
                                     
