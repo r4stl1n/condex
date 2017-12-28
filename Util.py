@@ -20,7 +20,6 @@ class Util:
             os.system('clear')
 
     @staticmethod
-    @database_connection_context
     def bootstrap():
         
         try:
@@ -34,6 +33,7 @@ class Util:
         except Exception as e:
             #print e
             pass
+
 
     @staticmethod
     def tuple_list_to_dict(tlist):
