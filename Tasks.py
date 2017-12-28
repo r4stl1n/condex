@@ -9,6 +9,7 @@ from logzero import logger
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
+from config.Database import *
 from datetime import timedelta
 from config import CondexConfig
 
