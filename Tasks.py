@@ -53,38 +53,38 @@ def supported_coins_task():
     logger.debug("Starting Coins Update Task")
 
     # First We Update our Supported Market List
-    with internal_database.transaction():
-        for key in supportedCoins:
+    
+    for key in supportedCoins:
 
-            sliced_pair = ''
-            if key != 'BTC/USDT':
-                sliced_pair = key[:-4]
-            else:
-                sliced_pair = 'BTC'
-            
-            DatabaseManager.create_supported_coin_model(sliced_pair)
+        sliced_pair = ''
+        if key != 'BTC/USDT':
+            sliced_pair = key[:-4]
+        else:
+            sliced_pair = 'BTC'
+        
+        DatabaseManager.create_supported_coin_model(sliced_pair)
 
+        btcTickerVal = 0.0
+        usdTickerVal = 0.0
+
+        if key != 'BTC/USDT':
+            btcTickerVal = marketData[key]['info']['Ask']
+            usdTickerVal = btcUsdValue*btcTickerVal
+        else:
             btcTickerVal = 0.0
-            usdTickerVal = 0.0
+            usdTickerVal = marketData[key]['info']['Ask']
 
-            if key != 'BTC/USDT':
-                btcTickerVal = marketData[key]['info']['Ask']
-                usdTickerVal = btcUsdValue*btcTickerVal
-            else:
-                btcTickerVal = 0.0
-                usdTickerVal = marketData[key]['info']['Ask']
+        if DatabaseManager.create_ticker_model(key, round(btcTickerVal,8), round(usdTickerVal,8), datetime.datetime.now()):
 
-            if DatabaseManager.create_ticker_model(key, round(btcTickerVal,8), round(usdTickerVal,8), datetime.datetime.now()):
-
-                #logger.debug("Created Ticker Model - " + key)
+            #logger.debug("Created Ticker Model - " + key)
+            pass
+        else:
+            
+            if DatabaseManager.update_ticker_model(key, round(btcTickerVal,8), round(usdTickerVal,8), datetime.datetime.now()):
+                #logger.debug("Updated Ticker Model - " + key)
                 pass
             else:
-                
-                if DatabaseManager.update_ticker_model(key, round(btcTickerVal,8), round(usdTickerVal,8), datetime.datetime.now()):
-                    #logger.debug("Updated Ticker Model - " + key)
-                    pass
-                else:
-                    logger.error("Failed To Update Ticker Model - " + key)
+                logger.error("Failed To Update Ticker Model - " + key)
 
     logger.info("Coins Update Task Completed")
 
@@ -108,64 +108,63 @@ def wallet_update_task():
 
     logger.info("Starting Wallet Update Task")
 
-    with internal_database.transaction():
-        for key in DatabaseManager.get_all_supported_coin_models():
 
+    for key in DatabaseManager.get_all_supported_coin_models():
+
+        btcbalance = 0.0
+        usdBalance = 0.0
+        totalCoins = None
+        tickerModel = get_ticker(key)
+
+        try:
+            btcbalance = walletData[key.Ticker]['total'] * tickerModel.BTCVal
+            totalCoins = walletData[key.Ticker]['total']
+            usdBalance = btcUsdValue*btcbalance
+        except:
             btcbalance = 0.0
-            usdBalance = 0.0
-            totalCoins = None
-            tickerModel = get_ticker(key)
+            totalCoins = 0.0
 
-            try:
-                btcbalance = walletData[key.Ticker]['total'] * tickerModel.BTCVal
-                totalCoins = walletData[key.Ticker]['total']
-                usdBalance = btcUsdValue*btcbalance
-            except:
-                btcbalance = 0.0
-                totalCoins = 0.0
-
-            if key.Ticker == 'BTC':
-                btcbalance=walletData[key.Ticker]['total']
-                usdBalance=btcUsdValue*btcbalance
+        if key.Ticker == 'BTC':
+            btcbalance=walletData[key.Ticker]['total']
+            usdBalance=btcUsdValue*btcbalance
 
 
-            indexedCoin = DatabaseManager.get_index_coin_model(key.Ticker)
+        indexedCoin = DatabaseManager.get_index_coin_model(key.Ticker)
 
-            if indexedCoin is not None:
-                totalBtcValue = totalBtcValue + btcbalance
+        if indexedCoin is not None:
+            totalBtcValue = totalBtcValue + btcbalance
 
 
-            if DatabaseManager.create_coin_balance_model(key.Ticker, btcbalance, usdBalance, totalCoins, datetime.datetime.now()):
-                #logger.debug("Created Coin Balance Model - " + key.Ticker)
+        if DatabaseManager.create_coin_balance_model(key.Ticker, btcbalance, usdBalance, totalCoins, datetime.datetime.now()):
+            #logger.debug("Created Coin Balance Model - " + key.Ticker)
+            pass
+        else:
+            if DatabaseManager.update_coin_balance_model(key.Ticker, btcbalance, btcUsdValue*btcbalance, totalCoins, datetime.datetime.now()):
+                #logger.debug("Updated Coin Balance Model - " + key.Ticker)
                 pass
             else:
-                if DatabaseManager.update_coin_balance_model(key.Ticker, btcbalance, btcUsdValue*btcbalance, totalCoins, datetime.datetime.now()):
-                    #logger.debug("Updated Coin Balance Model - " + key.Ticker)
-                    pass
-                else:
-                    logger.error("Failed Update Coin Balance Model - " + key.Ticker)
+                logger.error("Failed Update Coin Balance Model - " + key.Ticker)
 
     totalUnrealizedGain = 0.0
     totalRealizedGain = 0.0
-    
-    with internal_database.transaction():
-        for key in DatabaseManager.get_all_supported_coin_models():
 
-            tickerModel = get_ticker(key)
-            coinBalance = DatabaseManager.get_coin_balance_model(key.Ticker)
-            indexedCoin = DatabaseManager.get_index_coin_model(key.Ticker)
+    for key in DatabaseManager.get_all_supported_coin_models():
 
-            if indexedCoin is not None:
+        tickerModel = get_ticker(key)
+        coinBalance = DatabaseManager.get_coin_balance_model(key.Ticker)
+        indexedCoin = DatabaseManager.get_index_coin_model(key.Ticker)
 
-                if DatabaseManager.update_index_coin_model(
-                    indexedCoin.Ticker, 
-                    indexedCoin.DesiredPercentage,
-                    indexedCoin.get_distance_from_target(coinBalance,totalBtcValue),
-                    indexedCoin.Locked):
+        if indexedCoin is not None:
 
-                    logger.debug("Updated Indexed Coin Model - " + indexedCoin.Ticker)
-                else:
-                    logger.error("Failed To Update Indexed Coin Model - " + indexedCoin.Ticker)
+            if DatabaseManager.update_index_coin_model(
+                indexedCoin.Ticker, 
+                indexedCoin.DesiredPercentage,
+                indexedCoin.get_distance_from_target(coinBalance,totalBtcValue),
+                indexedCoin.Locked):
+
+                logger.debug("Updated Indexed Coin Model - " + indexedCoin.Ticker)
+            else:
+                logger.error("Failed To Update Indexed Coin Model - " + indexedCoin.Ticker)
 
 
     indexInfo = DatabaseManager.get_index_info_model()
