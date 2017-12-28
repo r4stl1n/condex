@@ -20,8 +20,9 @@ class Util:
             os.system('clear')
 
     @staticmethod
+    @database_connection_context
     def bootstrap():
-        internal_database.connect()
+        
         try:
             internal_database.create_tables([TickerModel, IndexInfoModel, IndexedCoinModel, SupportedCoinModel,
                                              CoinBalanceModel, RebalanceTickModel, CoinLockModel])
@@ -33,7 +34,6 @@ class Util:
         except Exception as e:
             #print e
             pass
-        internal_database.close()
 
     @staticmethod
     def tuple_list_to_dict(tlist):
