@@ -9,6 +9,7 @@ from logzero import logger
 from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
+from config.Database import *
 from datetime import timedelta
 from config import CondexConfig
 
@@ -52,6 +53,7 @@ def supported_coins_task():
     logger.debug("Starting Coins Update Task")
 
     # First We Update our Supported Market List
+    
     for key in supportedCoins:
 
         sliced_pair = ''
@@ -106,6 +108,7 @@ def wallet_update_task():
 
     logger.info("Starting Wallet Update Task")
 
+
     for key in DatabaseManager.get_all_supported_coin_models():
 
         btcbalance = 0.0
@@ -144,7 +147,7 @@ def wallet_update_task():
 
     totalUnrealizedGain = 0.0
     totalRealizedGain = 0.0
-    
+
     for key in DatabaseManager.get_all_supported_coin_models():
 
         tickerModel = get_ticker(key)
@@ -162,7 +165,6 @@ def wallet_update_task():
                 logger.debug("Updated Indexed Coin Model - " + indexedCoin.Ticker)
             else:
                 logger.error("Failed To Update Indexed Coin Model - " + indexedCoin.Ticker)
-
 
 
     indexInfo = DatabaseManager.get_index_info_model()
@@ -265,7 +267,9 @@ def perform_algo_task():
                                     amountOfEligbleToBuy = percentage_btc_amount / elgibleCoinTickerModel.BTCVal
 
                                 if coinBalance.TotalCoins >= amountOfRebalanceToSell:
+
                                     DatabaseManager.create_coin_lock_model(akey)
+                                    
                                     DatabaseManager.create_coin_lock_model(elgibleCoinTicker)
 
                                     
