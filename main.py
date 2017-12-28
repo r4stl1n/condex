@@ -113,6 +113,8 @@ class ConDex(cmd.Cmd):
                 icm.export_index()
             elif command_split[0] == 'import':
                 icm.import_index()
+            elif command_split[0] == 'equalweight':
+                icm.index_equal_weight()
             else:
                 logger.warn("Unknown Command")
         else:
