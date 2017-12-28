@@ -14,18 +14,6 @@ from models.CoinBalanceModel import CoinBalanceModel
 from models.RebalanceTickModel import RebalanceTickModel
 from models.SupportedCoinModel import SupportedCoinModel
 
-
-def database_connection_context(function):
-
-    def wrapper(*args, **kwargs):
-
-        internal_database.connect()
-        result = function(*args, **kwargs)
-        internal_database.close()
-        return result
-
-    return wrapper
-
 class DatabaseManager:
 
     def __init__(self):
