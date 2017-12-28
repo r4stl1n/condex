@@ -186,8 +186,17 @@ class IndexCommandManager:
             logger.warn("You cannot remove BTC from your index.")
             return
 
+        indexedCoin = DatabaseManager.get_index_coin_model(coin.upper())
+        btcCoin = DatabaseManager.get_index_coin_model('BTC')
+        percentageToAdd = indexedCoin.DesiredPercentage
+
         if self.coin_supported_check(coin.upper()):
+            
             if DatabaseManager.delete_index_coin_model(coin.upper()):
+
+                # Add percentage back to BTC model
+                DatabaseManager.update_index_coin_model(btcCoin.Ticker, btcCoin.DesiredPercentage+percentageToAdd, btcCoin.DistanceFromTarget, btcCoin.Locked)
+
                 logger.info("Coin " + coin.upper() + " removed from index")
             else:
                 # Already Exist
