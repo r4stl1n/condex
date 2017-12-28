@@ -335,7 +335,6 @@ class IndexCommandManager:
         totalUnlockedCoinsCount = 0
         averagePercentage = 0
 
-        indexInfo = DatabaseManager.get_index_info_model()
         indexedCoins = DatabaseManager.get_all_index_coin_models()
 
         for inCoins in indexedCoins:
