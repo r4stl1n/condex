@@ -2,6 +2,7 @@ import sys
 import json
 import jsonpickle
 import ccxt
+import requests
 import time
 from logzero import logger
 from terminaltables import AsciiTable
@@ -276,6 +277,30 @@ class IndexCommandManager:
         DatabaseManager.update_index_info_model(True, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
                                                 indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount,
                                                 indexInfo.RebalanceTickSetting)
+
+    def export_market_cap_index(self, top_n):
+        url = "https://api.coinmarketcap.com/v1/ticker/?limit=" + str(top_n)
+        response = requests.get(url)
+        market_cap = response.json()
+
+        coin_objs = []
+        for coin in market_cap:
+            logger.debug(coin)
+            coin_obj = IndexedCoinModel()
+            coin_obj.Ticker = coin['symbol']
+            coin_objs.append(coin)
+
+        indexJson = "["
+
+        coins = []
+        for coin in coin_objs:
+            coins.append(jsonpickle.encode(coin))
+        
+        indexJson += ",".join(coins)
+        indexJson += "]"
+
+        with open("index.json", "w") as file_object:
+            file_object.write(indexJson)
 
     def export_index(self):
         """Export the index to a JSON file."""
