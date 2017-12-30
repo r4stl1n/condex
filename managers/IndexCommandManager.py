@@ -311,8 +311,13 @@ class IndexCommandManager:
         indexJson = "["
 
         coins = []
+        adjusted_total = 0
         for coin_obj in coin_objs:
-            coin_obj.DesiredPercentage = round((coin_obj.DesiredPercentage / total_percentage) * 100,2)
+            adjusted_coin_percentage = round((coin_obj.DesiredPercentage / total_percentage) * 100,2)
+            if adjusted_coin_percentage + adjusted_total > 100:
+                adjusted_coin_percentage = 100 - adjusted_total
+            coin_obj.DesiredPercentage = adjusted_coin_percentage
+            adjusted_total += adjusted_coin_percentage
             coin_json = jsonpickle.encode(coin_obj)
             # logger.debug(coin_json)
             coins.append(coin_json)
