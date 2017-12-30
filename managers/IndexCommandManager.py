@@ -405,8 +405,8 @@ class IndexCommandManager:
         for inCoins in indexedCoins:
             if inCoins.Locked == False:
                 totalPercentage = totalPercentage + averagePercentage
-                if totalPercentage > 100:
-                   percentageDifference = totalPercentage - 100
+                if totalPercentage + averagePercentage > 100:
+                   desiredPercentage = 100 - totalPercentage
                 else:
-                   percentageDifference = 0
-                DatabaseManager.update_index_coin_model(inCoins.Ticker, float(averagePercentage - percentageDifference), 0.0, False)
+                   desiredPercentage = averagePercentage
+                DatabaseManager.update_index_coin_model(inCoins.Ticker, float(desiredPercentage), 0.0, False)
