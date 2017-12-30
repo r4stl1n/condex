@@ -270,16 +270,16 @@ def perform_algo_task():
 
                                     if coinBalance.TotalCoins >= amountOfRebalanceToSell:
 
-                                        DatabaseManager.create_coin_lock_model(akey)
-                                        
-                                        DatabaseManager.create_coin_lock_model(elgibleCoinTicker)
-
-                                        
-                                        logger.info("Performing Rebalance " + akey.upper() + " " + str(amountOfRebalanceToSell) + " - " + elgibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
                                         if em.market_active(akey, eligibleCoinTicker):
+                                            DatabaseManager.create_coin_lock_model(akey)
+                                            
+                                            DatabaseManager.create_coin_lock_model(elgibleCoinTicker)
+
+                                            
+                                            logger.info("Performing Rebalance " + akey.upper() + " " + str(amountOfRebalanceToSell) + " - " + elgibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
                                             app.send_task('Tasks.perform_rebalance_task', args=[akey.upper(), amountOfRebalanceToSell, elgibleCoinTicker.upper(), amountOfEligbleToBuy])
                                         else:
-                                            logger.error("One of the two coins is currently inactive")
+                                            logger.warn("This market is currently inactive")
                                         # Need to remove the eligbile coin from dictireonary
                                         del coinsElgibleForIncrease[elgibleCoinTicker]
                                     else:

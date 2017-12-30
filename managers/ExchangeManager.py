@@ -7,7 +7,7 @@ from config import CondexConfig
 
 class ExchangeManager:
 
-    markets = {}
+    markets = None
 
     def __init__(self):
         self.exman = ccxt.bittrex({'apiKey':CondexConfig.BITTREX_PUB, 'secret':CondexConfig.BITTREX_SEC})
@@ -29,7 +29,8 @@ class ExchangeManager:
             logger.exception(e)
     
     def market_active(self, ticker_1, ticker_2):
-        self.load_markets()
+        if markets is None:
+            self.load_markets()
         if len(self.markets) == 0:
             return False
         else:
