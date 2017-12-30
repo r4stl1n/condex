@@ -40,7 +40,7 @@ class ExchangeManager:
                 try:
                     return self.markets[ticker_2 + "/" + ticker_1]
                 except KeyError as e:
-                    logger.exception("Cannot make pair from %s and %s", 
+                    logger.exception("Cannot make pair from %s and %s", ticker_1, ticker_2)
 
     def load_markets(self):
         try:
