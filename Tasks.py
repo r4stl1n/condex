@@ -234,7 +234,7 @@ def perform_algo_task():
 
                                 for coinEligibleForIncrease in coinsEligibleForIncrease:
 
-                                    if not DatabaseManager.get_coin_lock_model(coinElgibleForIncrease):
+                                    if not DatabaseManager.get_coin_lock_model(coinEligibleForIncrease):
 
                                         indexCoinInfo = DatabaseManager.get_index_coin_model(coinAboveThreshold)
                                         coinBalance = DatabaseManager.get_coin_balance_model(coinAboveThreshold)
