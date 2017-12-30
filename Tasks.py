@@ -197,6 +197,7 @@ def increment_rebalance_tick_task():
 def perform_algo_task():
     coinsAboveThreshold = {}
     coinsElgibleForIncrease = {}
+    em = ExchangeManager()
 
     indexInfo = DatabaseManager.get_index_info_model()
 
