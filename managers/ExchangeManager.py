@@ -7,14 +7,56 @@ from config import CondexConfig
 
 class ExchangeManager:
 
+    markets = None
+
     def __init__(self):
         self.exman = ccxt.bittrex({'apiKey':CondexConfig.BITTREX_PUB, 'secret':CondexConfig.BITTREX_SEC})
         self.rate_delay = delay = int(self.exman.rateLimit / 1000)
+        
 
     def get_balance(self):
         try:
             time.sleep(self.rate_delay)
             return self.exman.fetch_balance()
+        
+        except ccxt.DDoSProtection as e:
+            logger.exception(e)
+        except ccxt.RequestTimeout as e:
+            logger.exception(e)
+        except ccxt.ExchangeNotAvailable as e:
+            logger.exception(e)
+        except ccxt.AuthenticationError as e:
+            logger.exception(e)
+    
+    def market_active(self, ticker_1, ticker_2):
+        if self.markets is None:
+            self.load_markets()
+        if len(self.markets) == 0:
+            return False
+        else:
+            try:
+                market = self.markets[ticker_1 + "/" + ticker_2]
+                if market == False:
+                    logger.warn("Market %s/%s inactive", ticker_1, ticker_2)
+                return market
+            except KeyError as e:
+                try:
+                    market = self.markets[ticker_2 + "/" + ticker_1]
+                    if market == False:
+                        logger.warn("Market %s/%s inactive", ticker_2, ticker_1)
+                    return market
+                except KeyError as e:
+                    logger.exception("Cannot make pair from %s and %s", ticker_1, ticker_2)
+
+    def load_markets(self):
+        try:
+            time.sleep(self.rate_delay)
+            market_response = self.exman.fetch_markets()
+
+            if market_response is not None:
+                self.markets = {}
+                for market in market_response:
+                    self.markets[market["symbol"]] = market["active"]
         
         except ccxt.DDoSProtection as e:
             logger.exception(e)

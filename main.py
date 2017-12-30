@@ -59,14 +59,22 @@ class ConDex(cmd.Cmd):
 
     def do_show(self, line):
         command_split = line.split(' ')
+        command = command_split[0]
 
         if len(command_split) >= 1:
-            if command_split[0] == "coins":
+            if command == "coins":
                 scm.show_avalible_coins()
-            elif command_split[0] == "stats":
+            elif command == "stats":
                 scm.show_stats()
-            elif command_split[0] == "index":
+            elif command == "index":
                 scm.show_index()
+            elif command == "coin":
+                if len(command_split) != 2:
+                    sys.stdout.write("coin symbol required\n")
+                else:
+                    # sys.stdout.write(str(command_split[1]) + "\n")
+                    pair = command_split[1].split("/")
+                    sys.stdout.write("The market " + str(command_split[1]) + " is active: " + str(em.market_active(pair[0], pair[1])) + "\n")
             else:
                 logger.warn("Unknown Command")
         else:
@@ -74,9 +82,10 @@ class ConDex(cmd.Cmd):
 
     def do_index(self, line):
         command_split = line.split(' ')
+        command = command_split[0]
 
         if len(command_split) >= 2:
-            if command_split[0] == "add":
+            if command == "add":
                 if len(command_split) == 2:
                     icm.index_add_coin(command_split[1])
                 elif len(command_split) == 3:
@@ -85,42 +94,42 @@ class ConDex(cmd.Cmd):
                     icm.index_add_coin(command_split[1],command_split[2], command_split[3])
                 else:
                     logger.warn("Not Enough Parameters")
-            elif command_split[0] == "update":
+            elif command == "update":
                 if len(command_split) == 4:
                     icm.index_update_coin(command_split[1],command_split[2], command_split[3])
                 else:
                     logger.warn("Not Enough Parameters")             
-            elif command_split[0] == "remove":
+            elif command == "remove":
                 icm.index_remove_coin(command_split[1])
-            elif command_split[0] == "lock":
+            elif command == "lock":
                 icm.lock_coin(command_split[1])
-            elif command_split[0] == "unlock":
+            elif command == "unlock":
                 icm.unlock_coin(command_split[1])
-            elif command_split[0] == 'threshold':
+            elif command == 'threshold':
                 icm.index_threshold_update(command_split[1])
-            elif command_split[0] == 'rtime':
+            elif command == 'rtime':
                 icm.index_rebalance_tick_update(command_split[1])
-            elif command_split[0] == 'marketcap':
+            elif command == 'marketcap':
                 if len(command_split) == 2:
                     icm.export_market_cap_index(command_split[1])
                 else:
                     logger.warn("Not Enough Parameters")
-            elif command_split[0] == 'bulkadd':
+            elif command == 'bulkadd':
                 icm.index_bulkadd_coin(command_split[1])
             else:
                 logger.warn("Unknown Command")
         elif len(command_split) >= 1:
-            if command_split[0] == 'start':
+            if command == 'start':
                 icm.index_start_command()
-            elif command_split[0] == 'gen':
+            elif command == 'gen':
                 icm.index_gen_command()
-            elif command_split[0] == 'stop':
+            elif command == 'stop':
                 icm.index_stop_command()
-            elif command_split[0] == 'export':
+            elif command == 'export':
                 icm.export_index()
-            elif command_split[0] == 'import':
+            elif command == 'import':
                 icm.import_index()
-            elif command_split[0] == 'equalweight':
+            elif command == 'equalweight':
                 icm.index_equal_weight()
             else:
                 logger.warn("Unknown Command")
@@ -129,17 +138,18 @@ class ConDex(cmd.Cmd):
 
     def do_debug(self, line):
         command_split = line.split(' ')
+        command = command_split[0]
 
         if len(command_split) >= 1:
-            if command_split[0] == "coin_update":
+            if command == "coin_update":
                 dcm.coin_update()
-            elif command_split[0] == "wallet_update":
+            elif command == "wallet_update":
                 dcm.wallet_update()
-            elif command_split[0] == "perform_algo":
+            elif command == "perform_algo":
                 dcm.perform_algo()
-            elif command_split[0] == "perform_rebalance":
+            elif command == "perform_rebalance":
                 dcm.perform_rebalance(command_split[1],command_split[2],command_split[3],command_split[4])
-            elif command_split[0] == 'increment_tick':
+            elif command == 'increment_tick':
                 dcm.increment_tick()
             else:
                 logger.warn("Unknown Command")
@@ -166,7 +176,7 @@ class ConDex(cmd.Cmd):
         return True
 
 if __name__ == '__main__':
-
+    logzero.loglevel(logging.INFO)
     logzero.logfile("condex.log")
     Util.clear_screen()
     Util.bootstrap()
