@@ -100,6 +100,11 @@ class ConDex(cmd.Cmd):
                 icm.index_threshold_update(command_split[1])
             elif command_split[0] == 'rtime':
                 icm.index_rebalance_tick_update(command_split[1])
+            elif command_split[0] == 'marketcap':
+                if len(command_split) == 2:
+                    icm.export_market_cap_index(command_split[1])
+                else:
+                    logger.warn("Not Enough Parameters")
             else:
                 logger.warn("Unknown Command")
         elif len(command_split) >= 1:

@@ -2,6 +2,7 @@ import sys
 import json
 import jsonpickle
 import ccxt
+import requests
 import time
 from logzero import logger
 from terminaltables import AsciiTable
@@ -277,6 +278,55 @@ class IndexCommandManager:
                                                 indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount,
                                                 indexInfo.RebalanceTickSetting)
 
+    def export_market_cap_index(self, top_n):
+        to_retrieve = int(top_n) + 20
+        url = "https://api.coinmarketcap.com/v1/ticker/?limit=" + str(to_retrieve)
+        response = requests.get(url)
+        if response.status_code != 200:
+            logger.error("There was a problem retrieving the market cap data")
+            return
+        market_cap = response.json()
+
+        global_response = requests.get('https://api.coinmarketcap.com/v1/global/')
+        if global_response.status_code != 200:
+            logger.error("There was a problem retrieving the market cap data")
+            return
+        total_market_cap = float(global_response.json()['total_market_cap_usd'])
+
+        coin_objs = []
+        total_percentage = 0
+        for coin in market_cap:
+            if len(coin_objs) >= int(top_n):
+                break
+            else:
+                if (self.coin_supported_check(str(coin['symbol']).upper())):
+                    coin_obj = IndexedCoinModel()
+                    coin_obj.Ticker = coin['symbol']
+                    market_percent = round((float(coin['market_cap_usd'])/total_market_cap) * 100, 2)
+                    coin_obj.DesiredPercentage = market_percent
+                    total_percentage += market_percent
+                    coin_objs.append(coin_obj)
+
+        indexJson = "["
+
+        coins = []
+        adjusted_total = 0
+        for coin_obj in coin_objs:
+            adjusted_coin_percentage = round((coin_obj.DesiredPercentage / total_percentage) * 100,2)
+            if adjusted_coin_percentage + adjusted_total > 100:
+                adjusted_coin_percentage = 100 - adjusted_total
+            coin_obj.DesiredPercentage = adjusted_coin_percentage
+            adjusted_total += adjusted_coin_percentage
+            coin_json = jsonpickle.encode(coin_obj)
+            # logger.debug(coin_json)
+            coins.append(coin_json)
+        
+        indexJson += ",".join(coins)
+        indexJson += "]"
+
+        with open("index.json", "w") as file_object:
+            file_object.write(indexJson)
+
     def export_index(self):
         """Export the index to a JSON file."""
         indexInfo = DatabaseManager.get_all_index_coin_models()
@@ -305,7 +355,11 @@ class IndexCommandManager:
             indexed_coins = jsonpickle.decode(file_obj.read())
 
         for coin in indexed_coins:
-            DatabaseManager.create_index_coin_model(coin.Ticker, coin.DesiredPercentage, coin.DistanceFromTarget, coin.Locked)
+            coin.DesiredPercentage = coin.DesiredPercentage if coin.DesiredPercentage is not None else 1
+            coin.Locked = coin.Locked if coin.Locked is not None else False
+            # logger.debug('adding %s with percentage %s', coin.Ticker, coin.DesiredPercentage)
+
+            DatabaseManager.create_index_coin_model(coin.Ticker, coin.DesiredPercentage, 0, coin.Locked)
 
         logger.info("Index imported from index.json")
 
