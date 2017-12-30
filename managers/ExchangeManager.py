@@ -34,7 +34,7 @@ class ExchangeManager:
         if len(self.markets) == 0:
             return False
         else:
-             try:
+            try:
                 return self.markets[ticker_1 + "/" + ticker_2]
             except KeyError as e:
                 try:
