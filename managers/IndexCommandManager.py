@@ -278,20 +278,19 @@ class IndexCommandManager:
                                                 indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.OrderRetryAmount,
                                                 indexInfo.RebalanceTickSetting)
 
-    def weight_by_market_cap(self, coins):
-        global_response = requests.get('https://api.coinmarketcap.com/v1/global/')
-        total_market_cap = global_response.json()['total_market_cap_usd']
-
-        for coin in coins:
-            coin.DesiredPercentage = requests.get()
-
     def export_market_cap_index(self, top_n):
         to_retrieve = int(top_n) + 20
         url = "https://api.coinmarketcap.com/v1/ticker/?limit=" + str(to_retrieve)
         response = requests.get(url)
+        if response.status_code != 200:
+            logger.error("There was a problem retrieving the market cap data")
+            return
         market_cap = response.json()
 
         global_response = requests.get('https://api.coinmarketcap.com/v1/global/')
+        if global_response.status_code != 200:
+            logger.error("There was a problem retrieving the market cap data")
+            return
         total_market_cap = float(global_response.json()['total_market_cap_usd'])
 
         coin_objs = []
