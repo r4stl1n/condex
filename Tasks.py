@@ -420,15 +420,10 @@ def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, eligibleTicker,
                                     logger.debug("Buy Order Timeout Reached")
                                 time.sleep(10) #Magic Number
 
-
-        # Delete the locks
-        if CondexConfig.DEBUG != True:
-            DatabaseManager.delete_coin_lock_model(rebalanceTicker)
-            DatabaseManager.delete_coin_lock_model(eligibleTicker)
-
     except Exception as e:
         logger.exception(e)
 
+    finally:
         # Delete the locks
         if CondexConfig.DEBUG != True:
             DatabaseManager.delete_coin_lock_model(rebalanceTicker)
@@ -510,13 +505,9 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
                             logger.debug("Buy Order Timeout Reached")
                         time.sleep(10) #Magic Number 
 
-
-        # Delete the locks
-        if CondexConfig.DEBUG != True:
-            DatabaseManager.delete_coin_lock_model(elgibleTicker)
-
     except Exception as e:
         logger.exception(e)
-        # Delete the locks
+
+    finally:
         if CondexConfig.DEBUG != True:
             DatabaseManager.delete_coin_lock_model(elgibleTicker)
