@@ -41,8 +41,10 @@ class ExchangeManager:
             time.sleep(self.rate_delay)
             market_response = self.exman.fetch_markets()
 
-            for market in market_response:
-                self.markets[market["symbol"]] = market["active"]
+            if market_response is not None:
+                self.markets = {}
+                for market in market_response:
+                    self.markets[market["symbol"]] = market["active"]
         
         except ccxt.DDoSProtection as e:
             logger.exception(e)
