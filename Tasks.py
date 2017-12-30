@@ -208,7 +208,7 @@ def perform_algo_task():
             if percentage_btc_amount <= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT:
                 logger.debug("Current BTC Threshold Value To Low - " + str(percentage_btc_amount))
             else:
-                # Generate our winners/lossers list
+                # Generate our winners/losers list
                 for indexedCoin in DatabaseManager.get_all_index_coin_models():
                     if indexedCoin.DistanceFromTarget >= indexInfo.BalanceThreshold:
                         coinsAboveThreshold[indexedCoin.Ticker] = indexedCoin.DistanceFromTarget
@@ -275,7 +275,10 @@ def perform_algo_task():
 
                                         
                                         logger.info("Performing Rebalance " + akey.upper() + " " + str(amountOfRebalanceToSell) + " - " + elgibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
-                                        app.send_task('Tasks.perform_rebalance_task', args=[akey.upper(), amountOfRebalanceToSell, elgibleCoinTicker.upper(), amountOfEligbleToBuy])
+                                        if em.market_active(akey) and em.market_active(eligibleCoinTicker):
+                                            app.send_task('Tasks.perform_rebalance_task', args=[akey.upper(), amountOfRebalanceToSell, elgibleCoinTicker.upper(), amountOfEligbleToBuy])
+                                        else:
+                                            logger.error("One of the two coins is currently inactive")
                                         # Need to remove the eligbile coin from dictireonary
                                         del coinsElgibleForIncrease[elgibleCoinTicker]
                                     else:
