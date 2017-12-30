@@ -3,7 +3,6 @@ from config import CondexConfig
 from peewee import *
 from playhouse.pool import *
 
-
 if CondexConfig.USE_DATABASE == 'MYSQL':
     # Mysql Database Setup
     internal_database = PooledMySQLDatabase(
