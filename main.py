@@ -74,7 +74,8 @@ class ConDex(cmd.Cmd):
                 else:
                     sys.stdout.write("showing coin " + command_split[1])
                     # sys.stdout.write(str(command_split[1]) + "\n")
-                    sys.stdout.write(str(em.market_active(command_split[1])) + "\n")
+                    pair = command_split[1].split("/")
+                    sys.stdout.write(str(em.market_active(pair[0], pair[1])) + "\n")
             else:
                 logger.warn("Unknown Command")
         else:

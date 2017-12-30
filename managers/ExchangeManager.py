@@ -7,12 +7,12 @@ from config import CondexConfig
 
 class ExchangeManager:
 
-    markets = []
+    markets = {}
 
     def __init__(self):
         self.exman = ccxt.bittrex({'apiKey':CondexConfig.BITTREX_PUB, 'secret':CondexConfig.BITTREX_SEC})
         self.rate_delay = delay = int(self.exman.rateLimit / 1000)
-        self.markets = self.get_markets()
+        
 
     def get_balance(self):
         try:
@@ -28,19 +28,20 @@ class ExchangeManager:
         except ccxt.AuthenticationError as e:
             logger.exception(e)
     
-    def market_active(self, ticker):
+    def market_active(self, ticker_1, ticker_2):
+        self.load_markets()
         if len(self.markets) == 0:
             return False
         else:
-            for market in self.markets:
-                if market["quote"] == ticker.upper():
-                    return market["active"]
-            return False
+            return self.markets[ticker_1 + "/" + ticker_2]
 
-    def get_markets(self):
+    def load_markets(self):
         try:
             time.sleep(self.rate_delay)
-            return self.exman.fetch_markets()
+            market_response = self.exman.fetch_markets()
+
+            for market in market_response:
+                self.markets[market["symbol"]] = market["active"]
         
         except ccxt.DDoSProtection as e:
             logger.exception(e)

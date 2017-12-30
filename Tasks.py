@@ -276,7 +276,7 @@ def perform_algo_task():
 
                                         
                                         logger.info("Performing Rebalance " + akey.upper() + " " + str(amountOfRebalanceToSell) + " - " + elgibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
-                                        if em.market_active(akey) and em.market_active(eligibleCoinTicker):
+                                        if em.market_active(akey, eligibleCoinTicker):
                                             app.send_task('Tasks.perform_rebalance_task', args=[akey.upper(), amountOfRebalanceToSell, elgibleCoinTicker.upper(), amountOfEligbleToBuy])
                                         else:
                                             logger.error("One of the two coins is currently inactive")
