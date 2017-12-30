@@ -29,7 +29,7 @@ class ExchangeManager:
             logger.exception(e)
     
     def market_active(self, ticker_1, ticker_2):
-        if markets is None:
+        if self.markets is None:
             self.load_markets()
         if len(self.markets) == 0:
             return False
