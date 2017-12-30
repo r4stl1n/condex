@@ -227,7 +227,7 @@ def perform_algo_task():
                     if len(coinsElgibleForIncrease) >=1:
                         logger.debug("Currently " + str(len(coinsElgibleForIncrease)) + " elgible for increase")
                         logger.debug(coinsElgibleForIncrease)
-                        while len(coinsAboveThreshold) >= 1:
+                        while (len(coinsAboveThreshold) >= 1) and (len(coinsElgibleForIncrease) >= 1):
 
                             akey = coinsAboveThreshold.keys()[0]
                             
