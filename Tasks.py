@@ -281,7 +281,7 @@ def perform_algo_task():
                                             logger.warn("This market is currently inactive")
                                         # Need to remove the eligbile coin from dictireonary
                                         del coinsElgibleForIncrease[elgibleCoinTicker]
-                                    else:okay,
+                                    else:
                                         logger.error("Failed to sell coins - we do not have enough of " + str(akey))
 
                                 else:
