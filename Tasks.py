@@ -311,125 +311,116 @@ def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, eligibleTicker,
 
     em = ExchangeManager()
 
-    try:
-        partial_fill_amount = 0
-        partial_filled = False
+    partial_fill_amount = 0
+    partial_filled = False
 
-        if rebalanceTicker != "BTC" and rebalanceTicker != "btc":
+    if rebalanceTicker != "BTC" and rebalanceTicker != "btc":
 
-            while coinSellIncomplete:
+        while coinSellIncomplete:
 
-                if coinSellRetryCount >= retryLimit:
-                    coinSellFailed = True
+            if coinSellRetryCount >= retryLimit:
+                coinSellFailed = True
+                coinSellIncomplete = False
+                break
+                # Cancel Order
+            else:
+
+                rebalanceCoinTicker = DatabaseManager.get_ticker_model(rebalanceTicker+"/BTC")
+
+                if CondexConfig.DEBUG == True:
+                    logger.info("Placing Sell Order For " + rebalanceTicker+"/BTC")
+                else:
+                    logger.info("Selling " + str(rebalanceSellAmount) + " of " + rebalanceTicker + " at " + str(rebalanceCoinTicker.BTCVal))
+                    sellOrderUUID = em.create_sell_order(rebalanceTicker, rebalanceSellAmount, rebalanceCoinTicker.BTCVal)['id']
+                    time.sleep(60*indexInfo.OrderTimeout)
+
+                # Check order succeded through
+                if CondexConfig.DEBUG == True:
+                    logger.debug("Fetching order")
                     coinSellIncomplete = False
+                else:
+
+                    order_result = em.fetch_order(sellOrderUUID)
+                    order_filled_amount = order_result['filled']
+
+                    if order_result['status'] == "closed":
+                        logger.debug("Sold coin " + rebalanceTicker + " for " + str(order_result['price']))
+                        coinSellIncomplete = False
+                    elif (order_filled_amount*rebalanceCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
+                        em.cancel_order(sellOrderUUID)
+                        logger.debug("Sold partial of coin " + rebalanceTicker + " for " + str(order_result['price']))
+                        coinSellIncomplete = False
+                        partial_filled = True
+                        partial_fill_amount = order_filled_amount*rebalanceCoinTicker.BTCVal
+                    else:
+                        coinSellRetryCount = coinSellRetryCount + 1
+                        if CondexConfig.DEBUG == True:
+                            logger.debug("Canceling sell order")
+                        else:
+                            em.cancel_order(sellOrderUUID)
+                            logger.debug("Sell Order Timeout Reached")
+                        time.sleep(10) #Magic Number 
+
+    if coinSellFailed:
+        logger.info("Sell of coin " + rebalanceTicker + " failed after " + str(coinSellRetryCount) + " attempts")
+
+    else:
+        if eligibleTicker.upper() != "BTC":
+            while coinBuyIncomplete:
+
+                if coinBuyRetryCount >= retryLimit:
+                    coinBuyIncomplete = False
+                    logger.info("Buying of coin " + rebalanceTicker + " failed after " + str(coinBuyRetryCount) + " attempts")
                     break
                     # Cancel Order
                 else:
 
-                    rebalanceCoinTicker = DatabaseManager.get_ticker_model(rebalanceTicker+"/BTC")
-
                     if CondexConfig.DEBUG == True:
-                        logger.info("Placing Sell Order For " + rebalanceTicker+"/BTC")
+                        logger.debug("Putting in buy order")
                     else:
-                        logger.info("Selling " + str(rebalanceSellAmount) + " of " + rebalanceTicker + " at " + str(rebalanceCoinTicker.BTCVal))
-                        sellOrderUUID = em.create_sell_order(rebalanceTicker, rebalanceSellAmount, rebalanceCoinTicker.BTCVal)['id']
+                        logger.info("Buying " + str(elgibleBuyAmount) + " of " + eligibleTicker + " at " + str(eligibleCoinTicker.BTCVal))
+                        if partial_filled == True:
+                            buyOrderUUID = em.create_buy_order(eligibleTicker, partial_fill_amount/eligibleCoinTicker.BTCVal, eligibleCoinTicker.BTCVal)['id']
+                        else:
+                            buyOrderUUID = em.create_buy_order(eligibleTicker, elgibleBuyAmount, eligibleCoinTicker.BTCVal)['id']
                         time.sleep(60*indexInfo.OrderTimeout)
 
                     # Check order succeded through
                     if CondexConfig.DEBUG == True:
                         logger.debug("Fetching order")
-                        coinSellIncomplete = False
+                        coinBuyIncomplete = False
                     else:
 
-                        order_result = em.fetch_order(sellOrderUUID)
+                        order_result = em.fetch_order(buyOrderUUID)
                         order_filled_amount = order_result['filled']
 
                         if order_result['status'] == "closed":
-                            logger.debug("Sold coin " + rebalanceTicker + " for " + str(order_result['price']))
-                            coinSellIncomplete = False
-                        elif (order_filled_amount*rebalanceCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
-                            em.cancel_order(sellOrderUUID)
-                            logger.debug("Sold partial of coin " + rebalanceTicker + " for " + str(order_result['price']))
-                            coinSellIncomplete = False
-                            partial_filled = True
-                            partial_fill_amount = order_filled_amount*rebalanceCoinTicker.BTCVal
-                        else:
-                            coinSellRetryCount = coinSellRetryCount + 1
-                            if CondexConfig.DEBUG == True:
-                                logger.debug("Canceling sell order")
-                            else:
-                                em.cancel_order(sellOrderUUID)
-                                logger.debug("Sell Order Timeout Reached")
-                            time.sleep(10) #Magic Number 
-
-        if coinSellFailed:
-            logger.info("Sell of coin " + rebalanceTicker + " failed after " + str(coinSellRetryCount) + " attempts")
-
-        else:
-            if eligibleTicker.upper() != "BTC":
-                while coinBuyIncomplete:
-
-                    if coinBuyRetryCount >= retryLimit:
-                        coinBuyIncomplete = False
-                        logger.info("Buying of coin " + rebalanceTicker + " failed after " + str(coinBuyRetryCount) + " attempts")
-                        break
-                        # Cancel Order
-                    else:
-
-                        if CondexConfig.DEBUG == True:
-                            logger.debug("Putting in buy order")
-                        else:
-                            logger.info("Buying " + str(elgibleBuyAmount) + " of " + eligibleTicker + " at " + str(eligibleCoinTicker.BTCVal))
-                            if partial_filled == True:
-                                buyOrderUUID = em.create_buy_order(eligibleTicker, partial_fill_amount/eligibleCoinTicker.BTCVal, eligibleCoinTicker.BTCVal)['id']
-                            else:
-                                buyOrderUUID = em.create_buy_order(eligibleTicker, elgibleBuyAmount, eligibleCoinTicker.BTCVal)['id']
-                            time.sleep(60*indexInfo.OrderTimeout)
-
-                        # Check order succeded through
-                        if CondexConfig.DEBUG == True:
-                            logger.debug("Fetching order")
+                            logger.info("Bought coin " + eligibleTicker + " for " + str(order_result['price']))
                             coinBuyIncomplete = False
+
+                        elif (order_filled_amount*eligibleCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
+                            em.cancel_order(buyOrderUUID)
+                            logger.debug("Bought partial of coin " + eligibleCoinTicker + " for " + str(order_result['price']))
+                            coinBuyIncomplete = False
+
                         else:
-
-                            order_result = em.fetch_order(buyOrderUUID)
-                            order_filled_amount = order_result['filled']
-
-                            if order_result['status'] == "closed":
-                                logger.info("Bought coin " + eligibleTicker + " for " + str(order_result['price']))
-                                coinBuyIncomplete = False
-
-                            elif (order_filled_amount*eligibleCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
-                                em.cancel_order(buyOrderUUID)
-                                logger.debug("Bought partial of coin " + eligibleCoinTicker + " for " + str(order_result['price']))
-                                coinBuyIncomplete = False
-
+                            coinBuyRetryCount = coinBuyRetryCount + 1
+                            if CondexConfig.DEBUG == True:
+                                logger.debug("Canceling buy order")
                             else:
-                                coinBuyRetryCount = coinBuyRetryCount + 1
-                                if CondexConfig.DEBUG == True:
-                                    logger.debug("Canceling buy order")
-                                else:
-                                    try:
-                                        em.cancel_order(buyOrderUUID)
-                                    except:
-                                        coinBuyIncomplete = False
-                                        pass # order failed to cancel got filled previously
-                                    logger.debug("Buy Order Timeout Reached")
-                                time.sleep(10) #Magic Number
+                                try:
+                                    em.cancel_order(buyOrderUUID)
+                                except:
+                                    coinBuyIncomplete = False
+                                    pass # order failed to cancel got filled previously
+                                logger.debug("Buy Order Timeout Reached")
+                            time.sleep(10) #Magic Number
 
 
-        # Delete the locks
-        if CondexConfig.DEBUG != True:
-            DatabaseManager.delete_coin_lock_model(rebalanceTicker)
-            DatabaseManager.delete_coin_lock_model(eligibleTicker)
-
-    except Exception as e:
-        logger.exception(e)
-
-        # Delete the locks
-        if CondexConfig.DEBUG != True:
-            DatabaseManager.delete_coin_lock_model(rebalanceTicker)
-            DatabaseManager.delete_coin_lock_model(eligibleTicker)
+    # Delete the locks
+    if CondexConfig.DEBUG != True:
+        DatabaseManager.delete_coin_lock_model(rebalanceTicker)
+        DatabaseManager.delete_coin_lock_model(eligibleTicker)
 
 
 
@@ -453,67 +444,59 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
 
     em = ExchangeManager()
 
-    try:
+    partial_fill_amount = 0
+    partial_filled = False
 
-        partial_fill_amount = 0
-        partial_filled = False
+    DatabaseManager.create_coin_lock_model(elgibleTicker)
 
-        DatabaseManager.create_coin_lock_model(elgibleTicker)
+    while coinBuyIncomplete:
+        
+        if coinBuyRetryCount >= retryLimit:
+            coinBuyIncomplete = False
+            logger.info("Buying of coin " + elgibleTicker + " failed after " + str(coinBuyRetryCount) + " attempts")
+            break
+            # Cancel Order
+        else:
 
-        while coinBuyIncomplete:
-            
-            if coinBuyRetryCount >= retryLimit:
+            if CondexConfig.DEBUG == True:
+                logger.debug("Putting in buy order")
+            else:
+                logger.info("Buying " + str(elgibleBuyAmount) + " of " + elgibleTicker + " at " + str(elgibleCoinTicker.BTCVal)) 
+                buyOrderUUID = em.create_buy_order(elgibleTicker, elgibleBuyAmount, elgibleCoinTicker.BTCVal)['id']
+                time.sleep(60*indexInfo.OrderTimeout)
+
+            # Check order succeded through
+            if CondexConfig.DEBUG == True:
+                logger.debug("Fetching order")
                 coinBuyIncomplete = False
-                logger.info("Buying of coin " + elgibleTicker + " failed after " + str(coinBuyRetryCount) + " attempts")
-                break
-                # Cancel Order
             else:
 
-                if CondexConfig.DEBUG == True:
-                    logger.debug("Putting in buy order")
-                else:
-                    logger.info("Buying " + str(elgibleBuyAmount) + " of " + elgibleTicker + " at " + str(elgibleCoinTicker.BTCVal)) 
-                    buyOrderUUID = em.create_buy_order(elgibleTicker, elgibleBuyAmount, elgibleCoinTicker.BTCVal)['id']
-                    time.sleep(60*indexInfo.OrderTimeout)
-
-                # Check order succeded through
-                if CondexConfig.DEBUG == True:
-                    logger.debug("Fetching order")
+                order_result = em.fetch_order(buyOrderUUID)
+                order_filled_amount = order_result['filled']
+                
+                if order_result['status'] == "closed":
+                    logger.info("Bought coin " + elgibleTicker + " for " + str(order_result['price']))
                     coinBuyIncomplete = False
+
+                elif (order_filled_amount*elgibleCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
+                    em.cancel_order(buyOrderUUID)
+                    logger.debug("Bought partial of coin " + elgibleCoinTicker + " for " + str(order_result['price']))
+                    coinBuyIncomplete = False
+
                 else:
-
-                    order_result = em.fetch_order(buyOrderUUID)
-                    order_filled_amount = order_result['filled']
-                    
-                    if order_result['status'] == "closed":
-                        logger.info("Bought coin " + elgibleTicker + " for " + str(order_result['price']))
-                        coinBuyIncomplete = False
-
-                    elif (order_filled_amount*elgibleCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
-                        em.cancel_order(buyOrderUUID)
-                        logger.debug("Bought partial of coin " + elgibleCoinTicker + " for " + str(order_result['price']))
-                        coinBuyIncomplete = False
-
+                    coinBuyRetryCount = coinBuyRetryCount + 1
+                    if CondexConfig.DEBUG == True:
+                        logger.debug("Canceling buy order")
                     else:
-                        coinBuyRetryCount = coinBuyRetryCount + 1
-                        if CondexConfig.DEBUG == True:
-                            logger.debug("Canceling buy order")
-                        else:
-                            try:
-                                em.cancel_order(buyOrderUUID)
-                            except:
-                                coinBuyIncomplete = False
-                                pass # order failed to cancel got filled previously
-                            logger.debug("Buy Order Timeout Reached")
-                        time.sleep(10) #Magic Number 
+                        try:
+                            em.cancel_order(buyOrderUUID)
+                        except:
+                            coinBuyIncomplete = False
+                            pass # order failed to cancel got filled previously
+                        logger.debug("Buy Order Timeout Reached")
+                    time.sleep(10) #Magic Number 
 
 
-        # Delete the locks
-        if CondexConfig.DEBUG != True:
-            DatabaseManager.delete_coin_lock_model(elgibleTicker)
-
-    except Exception as e:
-        logger.exception(e)
-        # Delete the locks
-        if CondexConfig.DEBUG != True:
-            DatabaseManager.delete_coin_lock_model(elgibleTicker)
+    # Delete the locks
+    if CondexConfig.DEBUG != True:
+        DatabaseManager.delete_coin_lock_model(elgibleTicker)
