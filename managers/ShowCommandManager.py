@@ -27,7 +27,7 @@ class ShowCommandManager:
 
     def show_avalible_coins(self):
 
-        table_data = [['Avalible','Coins','.','.','.','.','.','.','.','.','.']]
+        table_data = [['Available','Coins','.','.','.','.','.','.','.','.','.']]
 
         count = 0
         current_array = []

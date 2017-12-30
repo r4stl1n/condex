@@ -410,3 +410,10 @@ class IndexCommandManager:
                 else:
                    desiredPercentage = averagePercentage
                 DatabaseManager.update_index_coin_model(inCoins.Ticker, float(desiredPercentage), 0.0, False)
+
+    def index_bulkadd_coin(self, coins):
+        coinList = coins.split(',')
+
+        for coin in coinList:
+            self.index_add_coin(coin)
+

@@ -105,6 +105,8 @@ class ConDex(cmd.Cmd):
                     icm.export_market_cap_index(command_split[1])
                 else:
                     logger.warn("Not Enough Parameters")
+            elif command_split[0] == 'bulkadd':
+                icm.index_bulkadd_coin(command_split[1])
             else:
                 logger.warn("Unknown Command")
         elif len(command_split) >= 1:
