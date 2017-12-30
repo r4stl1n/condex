@@ -34,7 +34,13 @@ class ExchangeManager:
         if len(self.markets) == 0:
             return False
         else:
-            return self.markets[ticker_1 + "/" + ticker_2]
+             try:
+                return self.markets[ticker_1 + "/" + ticker_2]
+            except KeyError as e:
+                try:
+                    return self.markets[ticker_2 + "/" + ticker_1]
+                except KeyError as e:
+                    logger.exception("Cannot make pair from %s and %s", 
 
     def load_markets(self):
         try:
