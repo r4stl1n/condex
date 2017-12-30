@@ -35,10 +35,16 @@ class ExchangeManager:
             return False
         else:
             try:
-                return self.markets[ticker_1 + "/" + ticker_2]
+                market = self.markets[ticker_1 + "/" + ticker_2]
+                if market == False:
+                    logger.warn("Market %s/%s inactive")
+                return market
             except KeyError as e:
                 try:
-                    return self.markets[ticker_2 + "/" + ticker_1]
+                    market = self.markets[ticker_2 + "/" + ticker_1]
+                    if market == False:
+                        logger.warn("Market %s/%s inactive")
+                    return market
                 except KeyError as e:
                     logger.exception("Cannot make pair from %s and %s", ticker_1, ticker_2)
 
