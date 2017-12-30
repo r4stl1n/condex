@@ -232,7 +232,7 @@ def perform_algo_task():
                             # Check to see if we still have coins to increase
                             if len(coinsElgibleForIncrease) >= 1:
 
-                                elgibleCoinTicker = coinsElgibleForIncrease.keys()[0]
+                                eligibleCoinTicker = coinsElgibleForIncrease.keys()[0]
 
                                 rebalanceCoinLocked = False
                                 elgibleCoinLocked = False
@@ -240,7 +240,7 @@ def perform_algo_task():
                                 if DatabaseManager.get_coin_lock_model(akey):
                                     rebalanceCoinLocked = True
 
-                                if DatabaseManager.get_coin_lock_model(elgibleCoinTicker):
+                                if DatabaseManager.get_coin_lock_model(eligibleCoinTicker):
                                     rebalanceCoinLocked = True
 
                                 if rebalanceCoinLocked == False and elgibleCoinLocked == False:
@@ -254,7 +254,7 @@ def perform_algo_task():
                                         rebalanceSpecialTicker = "BTC/USDT"
 
                                     rebalanceCoinTickerModel = DatabaseManager.get_ticker_model(rebalanceSpecialTicker)
-                                    elgibleCoinTickerModel = DatabaseManager.get_ticker_model(elgibleCoinTicker + "/BTC")
+                                    eligibleCoinTickerModel = DatabaseManager.get_ticker_model(eligibleCoinTicker + "/BTC")
 
                                     amountOfRebalanceToSell = 0.0
 
@@ -263,24 +263,24 @@ def perform_algo_task():
                                     else:
                                         amountOfRebalanceToSell = percentage_btc_amount / rebalanceCoinTickerModel.BTCVal
 
-                                    if elgibleCoinTicker == "BTC":
+                                    if eligibleCoinTicker == "BTC":
                                         amountOfEligbleToBuy = percentage_btc_amount
                                     else:
-                                        amountOfEligbleToBuy = percentage_btc_amount / elgibleCoinTickerModel.BTCVal
+                                        amountOfEligbleToBuy = percentage_btc_amount / eligibleCoinTickerModel.BTCVal
 
                                     if coinBalance.TotalCoins >= amountOfRebalanceToSell:
 
                                         if em.market_active(akey, eligibleCoinTicker):
                                             DatabaseManager.create_coin_lock_model(akey)
                                             
-                                            DatabaseManager.create_coin_lock_model(elgibleCoinTicker)
+                                            DatabaseManager.create_coin_lock_model(eligibleCoinTicker)
                                             
-                                            logger.info("Performing Rebalance " + akey.upper() + " " + str(amountOfRebalanceToSell) + " - " + elgibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
-                                            app.send_task('Tasks.perform_rebalance_task', args=[akey.upper(), amountOfRebalanceToSell, elgibleCoinTicker.upper(), amountOfEligbleToBuy])
+                                            logger.info("Performing Rebalance " + akey.upper() + " " + str(amountOfRebalanceToSell) + " - " + eligibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
+                                            app.send_task('Tasks.perform_rebalance_task', args=[akey.upper(), amountOfRebalanceToSell, eligibleCoinTicker.upper(), amountOfEligbleToBuy])
                                         else:
                                             logger.warn("This market is currently inactive")
                                         # Need to remove the eligbile coin from dictireonary
-                                        del coinsElgibleForIncrease[elgibleCoinTicker]
+                                        del coinsElgibleForIncrease[eligibleCoinTicker]
                                     else:
                                         logger.error("Failed to sell coins - we do not have enough of " + str(akey))
 
@@ -450,7 +450,7 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
 
     retryLimit = indexInfo.OrderRetryAmount
 
-    elgibleCoinTicker = DatabaseManager.get_ticker_model(elgibleTicker+"/BTC")
+    eligibleCoinTicker = DatabaseManager.get_ticker_model(elgibleTicker+"/BTC")
 
     em = ExchangeManager()
 
@@ -473,8 +473,8 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
                 if CondexConfig.DEBUG == True:
                     logger.debug("Putting in buy order")
                 else:
-                    logger.info("Buying " + str(elgibleBuyAmount) + " of " + elgibleTicker + " at " + str(elgibleCoinTicker.BTCVal)) 
-                    buyOrderUUID = em.create_buy_order(elgibleTicker, elgibleBuyAmount, elgibleCoinTicker.BTCVal)['id']
+                    logger.info("Buying " + str(elgibleBuyAmount) + " of " + elgibleTicker + " at " + str(eligibleCoinTicker.BTCVal)) 
+                    buyOrderUUID = em.create_buy_order(elgibleTicker, elgibleBuyAmount, eligibleCoinTicker.BTCVal)['id']
                     time.sleep(60*indexInfo.OrderTimeout)
 
                 # Check order succeded through
@@ -490,9 +490,9 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
                         logger.info("Bought coin " + elgibleTicker + " for " + str(order_result['price']))
                         coinBuyIncomplete = False
 
-                    elif (order_filled_amount*elgibleCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
+                    elif (order_filled_amount*eligibleCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
                         em.cancel_order(buyOrderUUID)
-                        logger.debug("Bought partial of coin " + elgibleCoinTicker + " for " + str(order_result['price']))
+                        logger.debug("Bought partial of coin " + eligibleCoinTicker + " for " + str(order_result['price']))
                         coinBuyIncomplete = False
 
                     else:
