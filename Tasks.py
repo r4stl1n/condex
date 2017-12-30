@@ -254,7 +254,7 @@ def perform_algo_task():
                                         else:
                                             amountOfRebalanceToSell = percentage_btc_amount / rebalanceCoinTickerModel.BTCVal
 
-                                        if eligibleCoinTicker == "BTC":
+                                        if coinEligibleForIncrease == "BTC":
                                             amountOfEligbleToBuy = percentage_btc_amount
                                         else:
                                             amountOfEligbleToBuy = percentage_btc_amount / eligibleCoinTickerModel.BTCVal
@@ -262,17 +262,15 @@ def perform_algo_task():
 
                                         if coinBalance.TotalCoins >= amountOfRebalanceToSell:
 
-                                            if em.market_active(coinAboveThreshold, eligibleCoinTicker):
+                                            if em.market_active(coinAboveThreshold, coinEligibleForIncrease):
                                                 DatabaseManager.create_coin_lock_model(coinAboveThreshold)
                                                 
-                                                DatabaseManager.create_coin_lock_model(eligibleCoinTicker)
+                                                DatabaseManager.create_coin_lock_model(coinEligibleForIncrease)
                                                 
-                                                logger.info("Performing Rebalance " + coinAboveThreshold.upper() + " " + str(amountOfRebalanceToSell) + " - " + eligibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
-                                                app.send_task('Tasks.perform_rebalance_task', args=[coinAboveThreshold.upper(), amountOfRebalanceToSell, eligibleCoinTicker.upper(), amountOfEligbleToBuy])
+                                                logger.info("Performing Rebalance " + coinAboveThreshold.upper() + " " + str(amountOfRebalanceToSell) + " - " + coinEligibleForIncrease.upper() + " " + str(amountOfEligbleToBuy))
+                                                app.send_task('Tasks.perform_rebalance_task', args=[coinAboveThreshold.upper(), amountOfRebalanceToSell, coinEligibleForIncrease.upper(), amountOfEligbleToBuy])
                                             else:
                                                 logger.warn("This market is currently inactive")
-                                            # Need to remove the eligbile coin from dictireonary
-                                            del coinsElgibleForIncrease[eligibleCoinTicker]
                                         else:
                                             logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
                                     else:
