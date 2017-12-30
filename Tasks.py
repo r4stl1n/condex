@@ -227,7 +227,9 @@ def perform_algo_task():
                     if len(coinsElgibleForIncrease) >=1:
                         logger.debug("Currently " + str(len(coinsElgibleForIncrease)) + " elgible for increase")
                         logger.debug(coinsElgibleForIncrease)
-                        for akey in coinsAboveThreshold:
+                        while len(coinsAboveThreshold) >= 1:
+
+                            akey = coinsAboveThreshold[0]
                             
                             # Check to see if we still have coins to increase
                             if len(coinsElgibleForIncrease) >= 1:
@@ -276,7 +278,11 @@ def perform_algo_task():
                                             DatabaseManager.create_coin_lock_model(eligibleCoinTicker)
                                             
                                             logger.info("Performing Rebalance " + akey.upper() + " " + str(amountOfRebalanceToSell) + " - " + eligibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
+                                            
+                                            del coinsAboveThreshold[akey]
+
                                             app.send_task('Tasks.perform_rebalance_task', args=[akey.upper(), amountOfRebalanceToSell, eligibleCoinTicker.upper(), amountOfEligbleToBuy])
+
                                         else:
                                             logger.warn("This market is currently inactive")
                                         # Need to remove the eligbile coin from dictireonary
