@@ -80,7 +80,7 @@ class BalanceManager:
     def handle_coin(self, coinAboveThreshold, coinEligibleForIncrease):
         coinBalance = DatabaseManager.get_coin_balance_model(coinAboveThreshold)
 
-        amounts = self.calculate_amounts(coinAboveThreshold, coinEligibleForIncrease):
+        amounts = self.calculate_amounts(coinAboveThreshold, coinEligibleForIncrease)
         amountOfRebalanceToSell = amounts["rebalance"]
         amountOfEligibleToBuy = amounts["eligible"]
 
@@ -105,7 +105,7 @@ class BalanceManager:
 
         rebalanceCoinTickerModel = DatabaseManager.get_ticker_model(rebalanceSpecialTicker)
         eligibleCoinTickerModel = DatabaseManager.get_ticker_model(coinEligibleForIncrease + "/BTC")
-        
+
         amountOfRebalanceToSell = 0.0
         amountOfEligibleToBuy = 0.0
         if coinAboveThreshold == "BTC":
