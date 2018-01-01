@@ -120,16 +120,16 @@ class BalanceManager:
         if coin_above_threshold == "BTC":
             amount_to_sell = percentage_btc_amount
         else:
-            btc_val = rebalance_coin_ticker_model.btc_val
+            btc_val = rebalance_coin_ticker_model.BTCVal
             if btc_val is not None and btc_val > 0:
                 amount_to_sell = percentage_btc_amount / btc_val
 
         if coin_below_threshold == "BTC":
             amount_to_buy = percentage_btc_amount
         else:
-            btc_val = eligible_coin_ticker_model.btc_val
+            btc_val = eligible_coin_ticker_model.BTCVal
             if btc_val is not None and btc_val > 0:
-                amount_to_buy = percentage_btc_amount / eligible_coin_ticker_model.btc_val
+                amount_to_buy = percentage_btc_amount / btc_val
 
         return {"rebalance": amount_to_sell, "eligible": amount_to_buy}
         
