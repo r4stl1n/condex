@@ -218,7 +218,7 @@ def perform_algo_task():
                     coin_off_percent = indexedCoin.get_percent_from_coin_target(coinBalance, indexInfo.TotalBTCVal)
                     if coin_off_percent >= indexInfo.BalanceThreshold:
                         coinsAboveThreshold[indexedCoin.Ticker] = coin_off_percent
-                    elif abs(coinOffPercent) >= indexInfo.BalanceThreshold:
+                    elif abs(coin_off_percent) >= indexInfo.BalanceThreshold:
                         coinsEligibleForIncrease[indexedCoin.Ticker] = coin_off_percent
 
                 # Sort our tables
