@@ -36,7 +36,7 @@ class BalanceManager:
             if len(coinsEligibleForIncrease) >=1:
                 logger.debug("Currently " + str(len(coinsEligibleForIncrease)) + " elgible for increase")
                 logger.debug(coinsEligibleForIncrease)
-                return False
+                return True
             else:
                 logger.debug("No coins eligible for increase")
         else:
