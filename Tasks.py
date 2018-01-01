@@ -269,11 +269,15 @@ def perform_algo_task():
 
                                                 if em.market_active(coinAboveThreshold, "BTC"):
                                                     marketOnlineCheckOne = True
+                                            else:
+                                                marketOnlineCheckOne = True
 
                                             if not coinEligibleForIncrease == "BTC":
 
                                                 if em.market_active(coinEligibleForIncrease, "BTC"):
                                                     marketOnlineCheckTwo = True
+                                            else:
+                                                marketOnlineCheckTwo = True
 
                                             if marketOnlineCheckTwo == True and marketOnlineCheckTwo == True:
 
@@ -285,10 +289,7 @@ def perform_algo_task():
                                                 app.send_task('Tasks.perform_rebalance_task', args=[coinAboveThreshold.upper(), amountOfRebalanceToSell, coinEligibleForIncrease.upper(), amountOfEligbleToBuy])
                                             
                                             else:
-                                                if marketOnlineCheckOne == False:
-                                                    logger.warn("Coin Above Threshold: " + coinAboveThreshold + "/BTC market is currently offline")
-                                                if marketOnlineCheckTwo == False:
-                                                    logger.warn("Eligible Coin: " + coinEligibleForIncrease + "/BTC market is currently offline")   
+                                                logger.warn("One of the market pairs where offline during rebalance")  
                                         else:
                                             logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
                                     else:
