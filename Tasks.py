@@ -230,9 +230,9 @@ def perform_algo_task():
 
                         for coinAboveThreshold in coinsAboveThreshold:
 
-                            if not DatabaseManager.get_coin_lock_model(coinAboveThreshold):
+                            for coinEligibleForIncrease in coinsEligibleForIncrease:
 
-                                for coinEligibleForIncrease in coinsEligibleForIncrease:
+                                if not DatabaseManager.get_coin_lock_model(coinAboveThreshold):
 
                                     if not DatabaseManager.get_coin_lock_model(coinEligibleForIncrease):
 
@@ -275,10 +275,8 @@ def perform_algo_task():
                                             logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
                                     else:
                                         logger.debug("Current Eligible Coin Is Locked - " + coinEligibleForIncrease)
-                            else:
-                                logger.debug("Current Avalible Coin Is Locked - " + coinAboveThreshold)
-                            
-
+                                else:
+                                    logger.debug("Current Avalible Coin Is Locked - " + coinAboveThreshold)
                     else:
                         logger.debug("No coins eligible for increase")
                 else:
