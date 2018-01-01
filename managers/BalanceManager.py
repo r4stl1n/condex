@@ -78,18 +78,9 @@ class BalanceManager:
             return False
     
     def handle_coin(self, coinAboveThreshold, coinEligibleForIncrease):
-        indexCoinInfo = DatabaseManager.get_index_coin_model(coinAboveThreshold)
         coinBalance = DatabaseManager.get_coin_balance_model(coinAboveThreshold)
 
-        rebalanceSpecialTicker = coinAboveThreshold + "/BTC"
-
-        if coinAboveThreshold == "BTC":
-            rebalanceSpecialTicker = "BTC/USDT"
-
-        rebalanceCoinTickerModel = DatabaseManager.get_ticker_model(rebalanceSpecialTicker)
-        eligibleCoinTickerModel = DatabaseManager.get_ticker_model(coinEligibleForIncrease + "/BTC")
-
-        amounts = self.calculate_amounts(coinAboveThreshold, coinEligibleForIncrease)
+        amounts = self.calculate_amounts(coinAboveThreshold, coinEligibleForIncrease):
         amountOfRebalanceToSell = amounts["rebalance"]
         amountOfEligibleToBuy = amounts["eligible"]
 
@@ -107,17 +98,29 @@ class BalanceManager:
             logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
 
     def calculate_amounts(self, coinAboveThreshold, coinEligibleForIncrease):
+        rebalanceSpecialTicker = coinAboveThreshold + "/BTC"
+
+        if coinAboveThreshold == "BTC":
+            rebalanceSpecialTicker = "BTC/USDT"
+
+        rebalanceCoinTickerModel = DatabaseManager.get_ticker_model(rebalanceSpecialTicker)
+        eligibleCoinTickerModel = DatabaseManager.get_ticker_model(coinEligibleForIncrease + "/BTC")
+        
         amountOfRebalanceToSell = 0.0
         amountOfEligibleToBuy = 0.0
         if coinAboveThreshold == "BTC":
             amountOfRebalanceToSell = percentage_btc_amount
         else:
-            amountOfRebalanceToSell = percentage_btc_amount / rebalanceCoinTickerModel.BTCVal
+            btcVal = rebalanceCoinTickerModel.BTCVal
+            if btcVal is not None and btcVal > 0:
+                amountOfRebalanceToSell = percentage_btc_amount / btcVal
 
         if coinEligibleForIncrease == "BTC":
             amountOfEligbleToBuy = percentage_btc_amount
         else:
-            amountOfEligbleToBuy = percentage_btc_amount / eligibleCoinTickerModel.BTCVal
+            btcVal = eligibleCoinTickerModel.BTCVal
+            if btcVal is not None and btcVal > 0:
+                amountOfEligbleToBuy = percentage_btc_amount / eligibleCoinTickerModel.BTCVal
         
         return {"rebalance": amountOfRebalanceToSell, "eligible": amountOfEligibleToBuy}
 
