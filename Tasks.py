@@ -196,7 +196,7 @@ def increment_rebalance_tick_task():
 @app.task(name='Tasks.perform_algo_task')
 def perform_algo_task():
     coinsAboveThreshold = {}
-    coinsElgibleForIncrease = {}
+    coinsEligibleForIncrease = {}
     em = ExchangeManager()
 
     indexInfo = DatabaseManager.get_index_info_model()
@@ -214,79 +214,88 @@ def perform_algo_task():
                     if indexedCoin.DistanceFromTarget >= indexInfo.BalanceThreshold:
                         coinsAboveThreshold[indexedCoin.Ticker] = indexedCoin.DistanceFromTarget
                     elif abs(indexedCoin.DistanceFromTarget) >= indexInfo.BalanceThreshold:
-                        coinsElgibleForIncrease[indexedCoin.Ticker] = indexedCoin.DistanceFromTarget
+                        coinsEligibleForIncrease[indexedCoin.Ticker] = indexedCoin.DistanceFromTarget
 
                 # Sort our tables
                 coinsAboveThreshold = Util.tuple_list_to_dict(sorted(coinsAboveThreshold.items(), key=lambda pair: pair[1], reverse=True))
-                coinsElgibleForIncrease = Util.tuple_list_to_dict(sorted(coinsElgibleForIncrease.items(), key=lambda pair: pair[1], reverse=True))
+                coinsEligibleForIncrease = Util.tuple_list_to_dict(sorted(coinsEligibleForIncrease.items(), key=lambda pair: pair[1], reverse=True))
                 
                 if len(coinsAboveThreshold) >= 1:
                     logger.debug("Currently " + str(len(coinsAboveThreshold)) + " avalible for rebalance")
                     logger.debug(coinsAboveThreshold)
 
-                    if len(coinsElgibleForIncrease) >=1:
-                        logger.debug("Currently " + str(len(coinsElgibleForIncrease)) + " elgible for increase")
-                        logger.debug(coinsElgibleForIncrease)
-                        for akey in coinsAboveThreshold:
-                            
-                            # Check to see if we still have coins to increase
-                            if len(coinsElgibleForIncrease) >= 1:
+                    if len(coinsEligibleForIncrease) >=1:
+                        logger.debug("Currently " + str(len(coinsEligibleForIncrease)) + " elgible for increase")
+                        logger.debug(coinsEligibleForIncrease)
 
-                                eligibleCoinTicker = coinsElgibleForIncrease.keys()[0]
+                        for coinAboveThreshold in coinsAboveThreshold:
 
-                                rebalanceCoinLocked = False
-                                elgibleCoinLocked = False
+                            for coinEligibleForIncrease in coinsEligibleForIncrease:
 
-                                if DatabaseManager.get_coin_lock_model(akey):
-                                    rebalanceCoinLocked = True
+                                if not DatabaseManager.get_coin_lock_model(coinAboveThreshold):
 
-                                if DatabaseManager.get_coin_lock_model(eligibleCoinTicker):
-                                    rebalanceCoinLocked = True
+                                    if not DatabaseManager.get_coin_lock_model(coinEligibleForIncrease):
 
-                                if rebalanceCoinLocked == False and elgibleCoinLocked == False:
+                                        indexCoinInfo = DatabaseManager.get_index_coin_model(coinAboveThreshold)
+                                        coinBalance = DatabaseManager.get_coin_balance_model(coinAboveThreshold)
 
-                                    indexCoinInfo = DatabaseManager.get_index_coin_model(akey)
-                                    coinBalance = DatabaseManager.get_coin_balance_model(akey)
+                                        rebalanceSpecialTicker = coinAboveThreshold + "/BTC"
 
-                                    rebalanceSpecialTicker = akey + "/BTC"
+                                        if coinAboveThreshold == "BTC":
+                                            rebalanceSpecialTicker = "BTC/USDT"
 
-                                    if akey == "BTC":
-                                        rebalanceSpecialTicker = "BTC/USDT"
+                                        rebalanceCoinTickerModel = DatabaseManager.get_ticker_model(rebalanceSpecialTicker)
+                                        eligibleCoinTickerModel = DatabaseManager.get_ticker_model(coinEligibleForIncrease + "/BTC")
 
-                                    rebalanceCoinTickerModel = DatabaseManager.get_ticker_model(rebalanceSpecialTicker)
-                                    eligibleCoinTickerModel = DatabaseManager.get_ticker_model(eligibleCoinTicker + "/BTC")
+                                        amountOfRebalanceToSell = 0.0
 
-                                    amountOfRebalanceToSell = 0.0
-
-                                    if akey == "BTC":
-                                        amountOfRebalanceToSell = percentage_btc_amount
-                                    else:
-                                        amountOfRebalanceToSell = percentage_btc_amount / rebalanceCoinTickerModel.BTCVal
-
-                                    if eligibleCoinTicker == "BTC":
-                                        amountOfEligbleToBuy = percentage_btc_amount
-                                    else:
-                                        amountOfEligbleToBuy = percentage_btc_amount / eligibleCoinTickerModel.BTCVal
-
-                                    if coinBalance.TotalCoins >= amountOfRebalanceToSell:
-
-                                        if em.market_active(akey, eligibleCoinTicker):
-                                            DatabaseManager.create_coin_lock_model(akey)
-                                            
-                                            DatabaseManager.create_coin_lock_model(eligibleCoinTicker)
-                                            
-                                            logger.info("Performing Rebalance " + akey.upper() + " " + str(amountOfRebalanceToSell) + " - " + eligibleCoinTicker.upper() + " " + str(amountOfEligbleToBuy))
-                                            app.send_task('Tasks.perform_rebalance_task', args=[akey.upper(), amountOfRebalanceToSell, eligibleCoinTicker.upper(), amountOfEligbleToBuy])
+                                        if coinAboveThreshold == "BTC":
+                                            amountOfRebalanceToSell = percentage_btc_amount
                                         else:
-                                            logger.warn("This market is currently inactive")
-                                        # Need to remove the eligbile coin from dictireonary
-                                        del coinsElgibleForIncrease[eligibleCoinTicker]
+                                            amountOfRebalanceToSell = percentage_btc_amount / rebalanceCoinTickerModel.BTCVal
+
+                                        if coinEligibleForIncrease == "BTC":
+                                            amountOfEligbleToBuy = percentage_btc_amount
+                                        else:
+                                            amountOfEligbleToBuy = percentage_btc_amount / eligibleCoinTickerModel.BTCVal
+
+
+                                        if coinBalance.TotalCoins >= amountOfRebalanceToSell:
+
+                                            marketOnlineCheckOne = False
+                                            marketOnlineCheckTwo = False
+
+                                            if not coinAboveThreshold == "BTC":
+
+                                                if em.market_active(coinAboveThreshold, "BTC"):
+                                                    marketOnlineCheckOne = True
+                                            else:
+                                                marketOnlineCheckOne = True
+
+                                            if not coinEligibleForIncrease == "BTC":
+
+                                                if em.market_active(coinEligibleForIncrease, "BTC"):
+                                                    marketOnlineCheckTwo = True
+                                            else:
+                                                marketOnlineCheckTwo = True
+
+                                            if marketOnlineCheckTwo == True and marketOnlineCheckTwo == True:
+
+                                                DatabaseManager.create_coin_lock_model(coinAboveThreshold)
+                                                
+                                                DatabaseManager.create_coin_lock_model(coinEligibleForIncrease)
+                                                
+                                                logger.info("Performing Rebalance " + coinAboveThreshold.upper() + " " + str(amountOfRebalanceToSell) + " - " + coinEligibleForIncrease.upper() + " " + str(amountOfEligbleToBuy))
+                                                app.send_task('Tasks.perform_rebalance_task', args=[coinAboveThreshold.upper(), amountOfRebalanceToSell, coinEligibleForIncrease.upper(), amountOfEligbleToBuy])
+                                            
+                                            else:
+                                                logger.warn("One of the market pairs where offline during rebalance")  
+                                        else:
+                                            logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
                                     else:
-                                        logger.error("Failed to sell coins - we do not have enough of " + str(akey))
-
+                                        logger.debug("Current Eligible Coin Is Locked - " + coinEligibleForIncrease)
                                 else:
-                                    logger.debug("One of the coins where locked")
-
+                                    logger.debug("Current Avalible Coin Is Locked - " + coinAboveThreshold)
                     else:
                         logger.debug("No coins eligible for increase")
                 else:
