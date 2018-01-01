@@ -26,42 +26,7 @@ class BalanceManager:
                 for coinEligibleForIncrease in coinsEligibleForIncrease:
 
                     if self.check_locks(coinAboveThreshold, coinEligibleForIncrease):
-                        indexCoinInfo = DatabaseManager.get_index_coin_model(coinAboveThreshold)
-                        coinBalance = DatabaseManager.get_coin_balance_model(coinAboveThreshold)
-
-                        rebalanceSpecialTicker = coinAboveThreshold + "/BTC"
-
-                        if coinAboveThreshold == "BTC":
-                            rebalanceSpecialTicker = "BTC/USDT"
-
-                        rebalanceCoinTickerModel = DatabaseManager.get_ticker_model(rebalanceSpecialTicker)
-                        eligibleCoinTickerModel = DatabaseManager.get_ticker_model(coinEligibleForIncrease + "/BTC")
-
-                        amountOfRebalanceToSell = 0.0
-
-                        if coinAboveThreshold == "BTC":
-                            amountOfRebalanceToSell = percentage_btc_amount
-                        else:
-                            amountOfRebalanceToSell = percentage_btc_amount / rebalanceCoinTickerModel.BTCVal
-
-                        if coinEligibleForIncrease == "BTC":
-                            amountOfEligbleToBuy = percentage_btc_amount
-                        else:
-                            amountOfEligbleToBuy = percentage_btc_amount / eligibleCoinTickerModel.BTCVal
-
-
-                        if coinBalance.TotalCoins >= amountOfRebalanceToSell:
-
-                            if self.check_markets(coinAboveThreshold, coinEligibleForIncrease):
-
-                                DatabaseManager.create_coin_lock_model(coinAboveThreshold)
-                                
-                                DatabaseManager.create_coin_lock_model(coinEligibleForIncrease)
-                                
-                                logger.info("Performing Rebalance " + coinAboveThreshold.upper() + " " + str(amountOfRebalanceToSell) + " - " + coinEligibleForIncrease.upper() + " " + str(amountOfEligbleToBuy))
-                                app.send_task('Tasks.perform_rebalance_task', args=[coinAboveThreshold.upper(), amountOfRebalanceToSell, coinEligibleForIncrease.upper(), amountOfEligbleToBuy])
-                        else:
-                            logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
+                        self.handle_coin(coinAboveThreshold, coinEligibleForIncrease)
     
     def check_coins(self, coinsAboveThreshold, coinsEligibleForIncrease):
         if len(coinsAboveThreshold) >= 1:
@@ -111,3 +76,49 @@ class BalanceManager:
         else:
             logger.warn("One of the market pairs where offline during rebalance")  
             return False
+    
+    def handle_coin(self, coinAboveThreshold, coinEligibleForIncrease):
+        indexCoinInfo = DatabaseManager.get_index_coin_model(coinAboveThreshold)
+        coinBalance = DatabaseManager.get_coin_balance_model(coinAboveThreshold)
+
+        rebalanceSpecialTicker = coinAboveThreshold + "/BTC"
+
+        if coinAboveThreshold == "BTC":
+            rebalanceSpecialTicker = "BTC/USDT"
+
+        rebalanceCoinTickerModel = DatabaseManager.get_ticker_model(rebalanceSpecialTicker)
+        eligibleCoinTickerModel = DatabaseManager.get_ticker_model(coinEligibleForIncrease + "/BTC")
+
+        amounts = self.calculate_amounts(coinAboveThreshold, coinEligibleForIncrease)
+        amountOfRebalanceToSell = amounts["rebalance"]
+        amountOfEligibleToBuy = amounts["eligible"]
+
+        if coinBalance.TotalCoins >= amountOfRebalanceToSell:
+
+            if self.check_markets(coinAboveThreshold, coinEligibleForIncrease):
+
+                DatabaseManager.create_coin_lock_model(coinAboveThreshold)
+                
+                DatabaseManager.create_coin_lock_model(coinEligibleForIncrease)
+                
+                logger.info("Performing Rebalance " + coinAboveThreshold.upper() + " " + str(amountOfRebalanceToSell) + " - " + coinEligibleForIncrease.upper() + " " + str(amountOfEligbleToBuy))
+                app.send_task('Tasks.perform_rebalance_task', args=[coinAboveThreshold.upper(), amountOfRebalanceToSell, coinEligibleForIncrease.upper(), amountOfEligbleToBuy])
+        else:
+            logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
+
+    def calculate_amounts(self, coinAboveThreshold, coinEligibleForIncrease):
+        amountOfRebalanceToSell = 0.0
+        amountOfEligibleToBuy = 0.0
+        if coinAboveThreshold == "BTC":
+            amountOfRebalanceToSell = percentage_btc_amount
+        else:
+            amountOfRebalanceToSell = percentage_btc_amount / rebalanceCoinTickerModel.BTCVal
+
+        if coinEligibleForIncrease == "BTC":
+            amountOfEligbleToBuy = percentage_btc_amount
+        else:
+            amountOfEligbleToBuy = percentage_btc_amount / eligibleCoinTickerModel.BTCVal
+        
+        return {"rebalance": amountOfRebalanceToSell, "eligible": amountOfEligibleToBuy}
+
+        
