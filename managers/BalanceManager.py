@@ -19,14 +19,14 @@ from managers.ExchangeManager import ExchangeManager
 class BalanceManager:
     em = ExchangeManager()
 
-    def rebalance_coins(self, coinsAboveThreshold, coinsEligibleForIncrease):
+    def rebalance_coins(self, coinsAboveThreshold, coinsEligibleForIncrease, percentage_btc_amount):
         if self.check_coins(coinsAboveThreshold, coinsEligibleForIncrease):
             for coinAboveThreshold in coinsAboveThreshold:
 
                 for coinEligibleForIncrease in coinsEligibleForIncrease:
 
                     if self.check_locks(coinAboveThreshold, coinEligibleForIncrease):
-                        self.handle_coin(coinAboveThreshold, coinEligibleForIncrease)
+                        self.handle_coin(coinAboveThreshold, coinEligibleForIncrease, percentage_btc_amount)
     
     def check_coins(self, coinsAboveThreshold, coinsEligibleForIncrease):
         if len(coinsAboveThreshold) >= 1:
@@ -81,11 +81,11 @@ class BalanceManager:
             logger.warn("One of the market pairs where offline during rebalance")  
             return False
     
-    def handle_coin(self, coinAboveThreshold, coinEligibleForIncrease):
+    def handle_coin(self, coinAboveThreshold, coinEligibleForIncrease, percentage_btc_amount):
         logger.debug("Handling sell/buy for %s and %s", coinAboveThreshold, coinEligibleForIncrease)
         coinBalance = DatabaseManager.get_coin_balance_model(coinAboveThreshold)
 
-        amounts = self.calculate_amounts(coinAboveThreshold, coinEligibleForIncrease)
+        amounts = self.calculate_amounts(coinAboveThreshold, coinEligibleForIncrease percentage_btc_amount)
         amountOfRebalanceToSell = amounts["rebalance"]
         amountOfEligibleToBuy = amounts["eligible"]
 
@@ -102,7 +102,7 @@ class BalanceManager:
         else:
             logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
 
-    def calculate_amounts(self, coinAboveThreshold, coinEligibleForIncrease):
+    def calculate_amounts(self, coinAboveThreshold, coinEligibleForIncrease, percentage_btc_amount):
         rebalanceSpecialTicker = coinAboveThreshold + "/BTC"
 
         if coinAboveThreshold == "BTC":
