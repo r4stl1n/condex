@@ -46,13 +46,15 @@ class BalanceManager:
 
     def check_locks(self, coinAboveThreshold, coinEligibleForIncrease):
         logger.debug("Checking locks for %s and %s", coinAboveThreshold, coinEligibleForIncrease)
-        if DatabaseManager.get_coin_lock_model(coinAboveThreshold):
+        if DatabaseManager.get_coin_lock_model(coinAboveThreshold) is not None:
             logger.debug("Current Avalible Coin Is Locked - " + coinAboveThreshold)
             return False
 
-        if DatabaseManager.get_coin_lock_model(coinEligibleForIncrease):
+        if DatabaseManager.get_coin_lock_model(coinEligibleForIncrease) is not None:
             logger.debug("Current Eligible Coin Is Locked - " + coinEligibleForIncrease)
             return False
+
+        return True
 
     def check_markets(self, coinAboveThreshold, coinEligibleForIncrease):
         logger.debug("Checking markets for %s and %s" + coinAboveThreshold, coinEligibleForIncrease)
