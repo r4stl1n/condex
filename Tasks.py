@@ -262,15 +262,33 @@ def perform_algo_task():
 
                                         if coinBalance.TotalCoins >= amountOfRebalanceToSell:
 
-                                            if em.market_active(coinAboveThreshold, coinEligibleForIncrease):
+                                            marketOnlineCheckOne = False
+                                            marketOnlineCheckTwo = False
+
+                                            if not coinAboveThreshold == "BTC":
+
+                                                if em.market_active(coinAboveThreshold, "BTC"):
+                                                    marketOnlineCheckOne = True
+
+                                            if not coinEligibleForIncrease == "BTC":
+
+                                                if em.market_active(coinEligibleForIncrease, "BTC"):
+                                                    marketOnlineCheckTwo = True
+
+                                            if marketOnlineCheckTwo == True and marketOnlineCheckTwo == True:
+
                                                 DatabaseManager.create_coin_lock_model(coinAboveThreshold)
                                                 
                                                 DatabaseManager.create_coin_lock_model(coinEligibleForIncrease)
                                                 
                                                 logger.info("Performing Rebalance " + coinAboveThreshold.upper() + " " + str(amountOfRebalanceToSell) + " - " + coinEligibleForIncrease.upper() + " " + str(amountOfEligbleToBuy))
                                                 app.send_task('Tasks.perform_rebalance_task', args=[coinAboveThreshold.upper(), amountOfRebalanceToSell, coinEligibleForIncrease.upper(), amountOfEligbleToBuy])
+                                            
                                             else:
-                                                logger.warn("This market is currently inactive")
+                                                if marketOnlineCheckOne == False:
+                                                    logger.warn("Coin Above Threshold: " + coinAboveThreshold + "/BTC market is currently offline")
+                                                if marketOnlineCheckTwo == False:
+                                                    logger.warn("Eligible Coin: " + coinEligibleForIncrease + "/BTC market is currently offline")   
                                         else:
                                             logger.error("Failed to sell coins - we do not have enough of " + str(coinAboveThreshold))
                                     else:
