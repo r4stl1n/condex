@@ -217,8 +217,9 @@ class IndexCommandManager:
             if percentage_btc_amount <= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT:
                 logger.error("Desired BTC Threshold Value Too Low - " + str(percentage))
             else:
-                DatabaseManager.update_index_info_model(indexInfo.Active, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
-                    round(float(percentage),2), indexInfo.OrderTimeout, indexInfo.OrderRetryAmount,
+                DatabaseManager.update_index_info_model(True, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
+                                                        round(float(percentage), 2), indexInfo.OrderTimeout,
+                                                        indexInfo.OrderRetryAmount,
                                                         indexInfo.RebalanceTickSetting)
                 logger.info("Index threshold set to " + str(round(float(percentage),2)))
         else:
@@ -229,8 +230,10 @@ class IndexCommandManager:
         indexInfo = DatabaseManager.get_index_info_model()
 
         if isinstance(int(tickcount),(float,int,complex,int)):
-            DatabaseManager.update_index_info_model(indexInfo.Active, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
-                round(float(percentage),2), indexInfo.OrderTimeout, indexInfo.OrderRetryAmount, int(tickcount))
+            DatabaseManager.update_index_info_model(True, indexInfo.TotalBTCVal, indexInfo.TotalUSDVal,
+                                                    indexInfo.BalanceThreshold, indexInfo.OrderTimeout,
+                                                    indexInfo.OrderRetryAmount,
+                                                    int(tickcount))
             logger.info("Index rebalance time set to " + str(tickcount) + " minutes.")
         else:
             logger.warn("Tick count isn't a number")

@@ -102,3 +102,14 @@ class ShowCommandManager:
         for line in  pyGraph.graph('Index Distribution', data=data):
             sys.stdout.write(line + "\n")
         sys.stdout.write("\n")
+
+    def show_threshold(self):
+        indexInfo = DatabaseManager.get_index_info_model()
+        sys.stdout.write("\nCurrent Rebalance Threshold\n")
+
+        summary_table_data = [["Active", "Balance Threshold", "Order Timeout", "Rebalance Tick Setting"]]
+        summary_table_data.append([indexInfo.Active, indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.RebalanceTickSetting])
+
+        summary_table = AsciiTable(summary_table_data)
+        sys.stdout.write(summary_table.table)
+        sys.stdout.write("\n")
