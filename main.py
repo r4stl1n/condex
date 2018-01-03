@@ -68,6 +68,8 @@ class ConDex(cmd.Cmd):
                 scm.show_stats()
             elif command == "index":
                 scm.show_index()
+            elif command == "threshold":
+                scm.show_threshold()
             elif command == "coin":
                 if len(command_split) != 2:
                     sys.stdout.write("coin symbol required\n")
