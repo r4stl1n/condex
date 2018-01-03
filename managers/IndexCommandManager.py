@@ -101,8 +101,8 @@ class IndexCommandManager:
                 if inCoins.Locked == True:
                     totalLockedPercentage = totalLockedPercentage + inCoins.DesiredPercentage
                 else:
-                    totalUnlockedPercentage = totalUnlockedPercentage + inCoins.DesiredPercentage
                     totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
+        totalUnlockedPercentage = 100 - totalLockedPercentage
 
         if len(indexedCoins) > 1:
             if totalUnlockedCoinsCount > 0:
