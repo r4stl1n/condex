@@ -396,18 +396,16 @@ class IndexCommandManager:
 
         for inCoins in indexedCoins:
             if inCoins.Locked == True:
-                totalLockedPercentage = totalLockedPercentage + inCoins.DesiredPercentage
+                totalLockedPercentage = round(totalLockedPercentage + inCoins.DesiredPercentage, 2)
             else:
                 totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
-
-        totalPercentage = totalPercentage + totalLockedPercentage
+        totalPercentage = totalLockedPercentage
         totalUnlockedPercentage = totalUnlockedPercentage - totalLockedPercentage
         averagePercentage = round(totalUnlockedPercentage / totalUnlockedCoinsCount, 2)
 
         logger.info("Setting default allocation to " + str(averagePercentage))
         for inCoins in indexedCoins:
             if inCoins.Locked == False:
-                totalPercentage = totalPercentage + averagePercentage
                 if totalPercentage + averagePercentage > 100:
                    desiredPercentage = 100 - totalPercentage
                 else:
