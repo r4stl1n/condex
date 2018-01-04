@@ -46,8 +46,6 @@ class IndexCommandManager:
 
         if locked == "true" or locked == "True":
             lockCoin = True
-        
-
 
         for inCoins in indexedCoins:
 
@@ -96,13 +94,14 @@ class IndexCommandManager:
         indexedCoins = DatabaseManager.get_all_index_coin_models()
         indexedCoin = DatabaseManager.get_index_coin_model(coin.upper())
 
+
         for inCoins in indexedCoins:
-            if inCoins.Ticker != coin.upper():
-                if inCoins.Locked == True:
-                    totalLockedPercentage = totalLockedPercentage + inCoins.DesiredPercentage
-                else:
-                    totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
-        totalUnlockedPercentage = 100 - totalLockedPercentage
+            if inCoins.Locked == True:
+                totalLockedPercentage = round(totalLockedPercentage + inCoins.DesiredPercentage, 2)
+            else:
+                totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
+
+        totalUnlockedPercentage = round(100 - totalLockedPercentage, 2)
 
         if len(indexedCoins) > 1:
             if totalUnlockedCoinsCount > 0:
@@ -114,21 +113,20 @@ class IndexCommandManager:
                 if percentage_btc_amount >= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT:
 
                     if float(percentage) > indexedCoin.DesiredPercentage:
-                        if totalUnlockedPercentage > float(percentage):
-
+                        if totalUnlockedPercentage + indexedCoin.DesiredPercentage > float(percentage):
                             if self.coin_supported_check(coin.upper()):
-
                                 percentageToAdd = 0.0
 
                                 if totalUnlockedCoinsCount > 0:
-                                    percentageToAdd = float(indexedCoin.DesiredPercentage-float(percentage))/totalUnlockedCoinsCount
+                                    percentageToAdd = round(float(indexedCoin.DesiredPercentage-float(percentage))/totalUnlockedCoinsCount, 2)
                                 else:
-                                    percentageToAdd = float(indexedCoin.DesiredPercentage-float(percentage))
-
+                                    percentageToAdd = round(float(indexedCoin.DesiredPercentage-float(percentage)), 2)
+                                
+                                
                                 for iCoin in indexedCoins:
                                     if iCoin.Ticker != coin.upper():
                                         if iCoin.Locked != True:
-                                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage-percentageToAdd, iCoin.DistanceFromTarget, iCoin.Locked)
+                                            DatabaseManager.update_index_coin_model(iCoin.Ticker, iCoin.DesiredPercentage+percentageToAdd, iCoin.DistanceFromTarget, iCoin.Locked)
 
                                 if isinstance(float(percentage),(float,int,complex,long)):
                                     if DatabaseManager.update_index_coin_model(coin.upper(), float(percentage), 0.0, lockCoin):
