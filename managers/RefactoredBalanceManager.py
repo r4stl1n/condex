@@ -58,7 +58,7 @@ class RefactoredBalanceManager:
         if amount is not None:
             logger.debug("checking to see if amount is greater than trade threshold")
 
-            over_threshold = amount >= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT
+            over_threshold = float(amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
             if over_threshold is True:
                 if is_over is False:
                     logger.debug("checking to see if intended amount of purchase is available in BTC")
@@ -76,7 +76,7 @@ class RefactoredBalanceManager:
                     #See if 1x the threshold is available
                     single_threshold_amount = round(amount / (index_info.BalanceThreshold/100), 8)
 
-                    if balance_available >= single_threshold_amount and single_threshold_amount >= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT:
+                    if balance_available >= single_threshold_amount and float(single_threshold_amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT):
                         return single_threshold_amount
                     logger.warning("The amount to trade %s not available currently", amount)
                 else:
