@@ -408,7 +408,7 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
                 if CondexConfig.DEBUG == True:
                     logger.debug("Putting in buy order")
                 else:
-                    logger.info("Buying " + str(elgibleBuyAmount) + " of " + eligibleTicker + " at " + str(eligibleCoinTicker.BTCVal))
+                    logger.info("Buying %s of %s at %s", eligibleBuyAmount, eligibleTicker, eligibleCoinTicker.BTCVal)
                     if partial_filled == True:
                         buyOrderUUID = em.create_buy_order(eligibleTicker, partial_fill_amount/eligibleCoinTicker.BTCVal, eligibleCoinTicker.BTCVal)['id']
                     else:
