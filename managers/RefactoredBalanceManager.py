@@ -19,7 +19,7 @@ class RefactoredBalanceManager:
 
     def handle_coin(self, coin, is_over, celery_app):
         """Handle re-balancing an individual coin."""
-        if DatabaseManager.get_coin_lock_model(coin) is not None:
+        if DatabaseManager.get_coin_lock_model(coin) is None:
             if not coin == "BTC":
                 if not self.em.market_active(coin, "BTC"):
                     logger.error("Market for %s/BTC offline", coin)
