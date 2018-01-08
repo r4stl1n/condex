@@ -49,10 +49,10 @@ class RefactoredBalanceManager:
         off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCVal)
         logger.debug("coin off percentage is %s", off)
         if is_over is True:
-            logger.debug("Coin %s over threshold, calculating off percentage")
+            logger.debug("Coin %s over threshold, calculating off percentage", coin)
             amount = round(coin_balance.BTCBalance * (off/100), 8)
         else:
-            logger.debug("Coin %s under threshold, calculating off percentage")
+            logger.debug("Coin %s under threshold, calculating off percentage", coin)
             amount = round(coin_balance.BTCBalance * (abs(off)/100), 8)
 
         if amount is not None:
