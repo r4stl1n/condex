@@ -224,7 +224,7 @@ def perform_algo_task():
                 # Sort our tables
                 coinsAboveThreshold = Util.tuple_list_to_dict(sorted(coinsAboveThreshold.items(), key=lambda pair: pair[1], reverse=True))
                 coinsEligibleForIncrease = Util.tuple_list_to_dict(sorted(coinsEligibleForIncrease.items(), key=lambda pair: pair[1], reverse=True))
-                balanceManager.rebalance_coins(coinsAboveThreshold, coinsEligibleForIncrease, percentage_btc_amount, app)
+                balanceManager.rebalance_coins(coinsAboveThreshold, coinsEligibleForIncrease, app)
                 
     except Exception as e:
         logger.exception(e)
