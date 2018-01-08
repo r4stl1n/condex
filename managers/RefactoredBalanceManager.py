@@ -4,7 +4,7 @@ from managers.DatabaseManager import DatabaseManager
 from managers.ExchangeManager import ExchangeManager
 from config import CondexConfig
 
-class RefactoredBalanceMaager:
+class RefactoredBalanceManager:
 
     em = ExchangeManager()
 
