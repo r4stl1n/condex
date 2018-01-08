@@ -88,6 +88,7 @@ class RefactoredBalanceMaager:
     def handle_trade(self, coin, amount, is_over, celery_app):
         """Send the appropriate celery message based on buy/sell."""
 
+        DatabaseManager.create_coin_lock_model(coin)
         if is_over is True:
             logger.debug("selling %s", coin)
             celery_app.send_task('Tasks.perform_sell_task', args=[coin.upper(), amount])
