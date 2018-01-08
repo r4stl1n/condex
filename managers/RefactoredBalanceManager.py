@@ -2,6 +2,7 @@ from logzero import logger
 
 from managers.DatabaseManager import DatabaseManager
 from managers.ExchangeManager import ExchangeManager
+from config import CondexConfig
 
 class RefactoredBalanceMaager:
 
@@ -23,7 +24,7 @@ class RefactoredBalanceMaager:
                     logger.error("Market for %s/BTC offline", coin)
                     return
 
-            amount = self.calculate_amount(coin)
+            amount = self.calculate_amount(coin, is_over)
             if amount is None:
                 return
             self.handle_trade(coin, is_over, celery_app)
@@ -40,32 +41,44 @@ class RefactoredBalanceMaager:
         Returns None if amount doesn't meet trade threshold.
         """
 
+        index_info = DatabaseManager.get_index_info_model()
+        coin_balance = DatabaseManager.get_coin_balance_model(coin)
+        indexed_coin = DatabaseManager.get_index_coin_model(coin)
         amount = None
         if is_over is True:
-            logger.debug("Coin %s under threshold, calculating off percentage")
+            logger.debug("Coin %s over threshold, calculating off percentage")
+            off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCValue)
+            amount = round(coin_balance.BTCBalance * (off/100), 8)
         else:
             logger.debug("Coin %s under threshold, calculating off percentage")
+            off = abs(indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCValue))
+            amount = round(coin_balance.BTCBalance * (off/100), 8)
 
         if amount is not None:
             logger.debug("checking to see if amount is greater than trade threshold")
-            over_threshold = False
+
+            over_threshold = amount >= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT
             if over_threshold is True:
                 if is_over is False:
                     logger.debug("checking to see if intended amount of purchase is available in BTC")
                     balance_available = 0.0
-                    btc_ticker = DatabaseManager.get_ticker_model("BTC/USDT")
-                    if balance_available >= amount: 
-                        # figure out how far off BTC is from its goal
+                    btc_balance = DatabaseManager.get_coin_balance_model("BTC")
+                    btc_indexed_coin = DatabaseManager.get_index_coin_model("BTC")
+
+                    btc_off = btc_indexed_coin.get_percent_from_coin_target(btc_balance, index_info.TotalBTCValue)
+                    if btc_off <= 0:
+                        return None
+                    balance_available = round(btc_balance.BTCBalance * (btc_off / 100), 8)
+                    if balance_available >= amount:
                         return amount
                     else:
                         logger.warning("The amount to trade %s not available currently", amount)
-                        return None
                 else:
                     logger.debug("selling %s %s to BTC/USDT", amount, coin)
             else:
                 logger.warning("Coin %s amount %s not over trade threshold", coin, amount)
-        else:
-            return amount
+
+        return amount
 
     def handle_trade(self, coin, is_over, celery_app):
         """Send the appropriate celery message based on buy/sell."""
