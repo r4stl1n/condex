@@ -31,7 +31,7 @@ class RefactoredBalanceManager:
             self.handle_trade(coin, amount, is_over, celery_app)
 
         else:
-            logger.warning("Coin %s is locked and cannot be traded", coin.Ticker)
+            logger.warning("Coin %s is locked and cannot be traded", coin)
 
     def calculate_amount(self, coin, is_over):
         """Figure out how much to buy/sell.
