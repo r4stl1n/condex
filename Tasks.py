@@ -16,7 +16,7 @@ from config import CondexConfig
 from Util import Util
 from managers.DatabaseManager import DatabaseManager
 from managers.ExchangeManager import ExchangeManager
-from managers.BalanceManager import BalanceManager
+from managers.RefactoredBalanceManager import RefactoredBalanceManager
 
 
 app = Celery('tasks', backend='amqp', broker='amqp://')
@@ -196,7 +196,7 @@ def increment_rebalance_tick_task():
 
 @app.task(name='Tasks.perform_algo_task')
 def perform_algo_task():
-    balanceManager = BalanceManager()
+    balanceManager = RefactoredBalanceManager()
 
     coinsAboveThreshold = {}
     coinsEligibleForIncrease = {}
