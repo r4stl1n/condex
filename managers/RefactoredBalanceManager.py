@@ -80,12 +80,14 @@ class RefactoredBalanceMaager:
 
         return amount
 
-    def handle_trade(self, coin, is_over, celery_app):
+    def handle_trade(self, coin, amount, is_over, celery_app):
         """Send the appropriate celery message based on buy/sell."""
 
         if is_over is True:
             """sell it"""
             logger.debug("selling %s", coin)
+            celery_app.send_task('Tasks.perform_sell_task', args=[coin.upper(), amount])
         else:
             """buy it"""
             logger.debug("buying %s", coin)
+            celery_app.send_task('Tasks.perform_buy_task', args=[coin.upper(), amount])
