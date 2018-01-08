@@ -71,16 +71,16 @@ class RefactoredBalanceMaager:
                     balance_available = round(btc_balance.BTCBalance * (btc_off / 100), 8)
                     if balance_available >= amount:
                         return amount
-                    
+
                     #See if 1x the threshold is available
                     threshold = index_info.BalanceThreshold
                     single_threshold_amount = 0.0
                     if threshold < 1:
                         threshold = round(1 / threshold)
-                    
+
                     single_threshold_amount = round(amount / threshold, 8)
-                    
-                    if balance_available >= single_threshold_amount:
+
+                    if balance_available >= single_threshold_amount and single_threshold_amount >= CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT:
                         return single_threshold_amount
                     logger.warning("The amount to trade %s not available currently", amount)
                 else:
