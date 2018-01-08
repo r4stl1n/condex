@@ -12,12 +12,13 @@ class RefactoredBalanceMaager:
         """Sell off coins over threshold. Buy coins below threshold."""
         for over in coins_above_threshold:
             logger.debug("handling %s", over)
-            self.handle_coin(over, True)
+            self.handle_coin(over, True, celery_app)
         for under in coins_below_threshold:
             logger.debug("handling %s", under)
-            self.handle_coin(under, False)
+            self.handle_coin(under, False, celery_app)
 
     def handle_coin(self, coin, is_over, celery_app):
+        """Handle re-balancing an individual coin."""
         if DatabaseManager.get_coin_lock_model(coin) is not None:
             if not coin == "BTC":
                 if not self.em.market_active(coin, "BTC"):
@@ -27,7 +28,7 @@ class RefactoredBalanceMaager:
             amount = self.calculate_amount(coin, is_over)
             if amount is None:
                 return
-            self.handle_trade(coin, is_over, celery_app)
+            self.handle_trade(coin, amount, is_over, celery_app)
 
         else:
             logger.warning("Coin %s is locked and cannot be traded", coin.Ticker)
@@ -45,14 +46,13 @@ class RefactoredBalanceMaager:
         coin_balance = DatabaseManager.get_coin_balance_model(coin)
         indexed_coin = DatabaseManager.get_index_coin_model(coin)
         amount = None
+        off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCValue)
         if is_over is True:
             logger.debug("Coin %s over threshold, calculating off percentage")
-            off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCValue)
             amount = round(coin_balance.BTCBalance * (off/100), 8)
         else:
             logger.debug("Coin %s under threshold, calculating off percentage")
-            off = abs(indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCValue))
-            amount = round(coin_balance.BTCBalance * (off/100), 8)
+            amount = round(abs(coin_balance.BTCBalance) * (off/100), 8)
 
         if amount is not None:
             logger.debug("checking to see if amount is greater than trade threshold")
@@ -84,10 +84,8 @@ class RefactoredBalanceMaager:
         """Send the appropriate celery message based on buy/sell."""
 
         if is_over is True:
-            """sell it"""
             logger.debug("selling %s", coin)
             celery_app.send_task('Tasks.perform_sell_task', args=[coin.upper(), amount])
         else:
-            """buy it"""
             logger.debug("buying %s", coin)
             celery_app.send_task('Tasks.perform_buy_task', args=[coin.upper(), amount])
