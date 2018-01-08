@@ -79,11 +79,12 @@ class RefactoredBalanceManager:
                     if balance_available >= single_threshold_amount and float(single_threshold_amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT):
                         return single_threshold_amount
                     else:
-                        return None
+                        amount = None
                     logger.warning("The amount to trade %s not available currently", amount)
                 else:
                     logger.debug("selling %s %s to BTC/USDT", amount, coin)
             else:
+                amount = None
                 logger.warning("Coin %s amount %s not over trade threshold", coin, amount)
 
         return amount
