@@ -57,6 +57,19 @@ class RefactoredBalanceManager:
             logger.debug("Coin %s under threshold, calculating off percentage", coin)
             amount = round(coin_balance.BTCBalance * (abs(off)/100), 8)
 
+        if amount == 0:
+            pair_string = coin
+            if pair_string == "BTC":
+                pair_string += "/USDT"
+            else:
+                pair_string += "/BTC"
+            market = self.em.get_min_buy(pair_string)
+            if market is not None:
+                amount = float(market["info"]["MinTradeSize"]) * 2
+            else:
+                log.debug("Zero amount of coin %s and market info cannot be found")
+                amount = None
+
         if amount is not None:
             logger.debug("checking to see if amount %s is greater than trade threshold", amount)
 
