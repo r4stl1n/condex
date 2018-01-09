@@ -1,4 +1,5 @@
 import cmd
+import json
 import sys
 import logzero
 from logzero import logger
@@ -151,6 +152,8 @@ class ConDex(cmd.Cmd):
                 dcm.perform_rebalance(command_split[1],command_split[2],command_split[3],command_split[4])
             elif command == 'increment_tick':
                 dcm.increment_tick()
+            elif command == 'market':
+                em.check_min_buy(38, "BAT/BTC")
             else:
                 logger.warn("Unknown Command")
         else:

@@ -63,11 +63,11 @@ class RefactoredBalanceManager:
                 pair_string += "/USDT"
             else:
                 pair_string += "/BTC"
-            market = self.em.get_min_buy(pair_string)
-            if market is not None:
-                amount = float(market["info"]["MinTradeSize"]) * 2
+            min_buy = self.em.get_min_buy_btc(pair_string)
+            if min_buy is not None:
+                amount = round(min_buy * 2, 8)
             else:
-                log.debug("Zero amount of coin %s and market info cannot be found")
+                logger.debug("Zero amount of coin %s and market info cannot be found")
                 amount = None
 
         if amount is not None:

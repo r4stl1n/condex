@@ -1,5 +1,6 @@
 import json
 import ccxt
+import sys
 import time
 
 from logzero import logger
@@ -50,7 +51,7 @@ class ExchangeManager:
                 except KeyError as e:
                     logger.exception("Cannot make pair from %s and %s", ticker_1, ticker_2)
 
-    def get_min_buy(self, pair_string):
+    def get_market(self, pair_string):
         if self.markets is None:
             self.load_markets()
         if len(self.markets) == 0:
@@ -61,13 +62,18 @@ class ExchangeManager:
             except KeyError as e:
                 logger.exception(e)
                 return None
+    
+    def get_min_buy_btc(self, pair_string):
+        market = self.get_market(pair_string)
+        if market is None:
+            return market
+        min_trade_size_coin = market["info"]["MinTradeSize"]
+        ticker = self.get_ticker(market["symbol"])
+        return min_trade_size_coin * ticker["last"]
+
 
     def check_min_buy(self, amount, pair_string):
-        market = self.get_min_buy(pair_string)
-        if market is None:
-            return False
-
-        min_trade_size = market["info"]["MinTradeSize"]
+        min_trade_size = self.get_min_buy_btc(pair_string)
         logger.debug("checking order %s against min trade size: %s", amount, min_trade_size)
         return float(amount) >= min_trade_size
 
