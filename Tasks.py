@@ -214,12 +214,13 @@ def perform_algo_task():
             else:
                 # Generate our winners/losers list
                 for indexedCoin in DatabaseManager.get_all_index_coin_models():
-                    coinBalance = DatabaseManager.get_coin_balance_model(indexedCoin.Ticker)
-                    coin_off_percent = indexedCoin.get_percent_from_coin_target(coinBalance, indexInfo.TotalBTCVal)
-                    if coin_off_percent >= indexInfo.BalanceThreshold:
-                        coinsAboveThreshold[indexedCoin.Ticker] = coin_off_percent
-                    elif abs(coin_off_percent) >= indexInfo.BalanceThreshold:
-                        coinsEligibleForIncrease[indexedCoin.Ticker] = coin_off_percent
+                    if indexedCoin.Ticker != "BTC":
+                        coinBalance = DatabaseManager.get_coin_balance_model(indexedCoin.Ticker)
+                        coin_off_percent = indexedCoin.get_percent_from_coin_target(coinBalance, indexInfo.TotalBTCVal)
+                        if coin_off_percent >= indexInfo.BalanceThreshold:
+                            coinsAboveThreshold[indexedCoin.Ticker] = coin_off_percent
+                        elif abs(coin_off_percent) >= indexInfo.BalanceThreshold:
+                            coinsEligibleForIncrease[indexedCoin.Ticker] = coin_off_percent
 
                 # Sort our tables
                 coinsAboveThreshold = Util.tuple_list_to_dict(sorted(coinsAboveThreshold.items(), key=lambda pair: pair[1], reverse=True))
