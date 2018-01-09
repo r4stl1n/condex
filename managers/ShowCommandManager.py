@@ -59,7 +59,7 @@ class ShowCommandManager:
             coinBalance = CoinBalanceModel.get(CoinBalanceModel.Coin == coin.Ticker)
 
             newArray = [coin.Ticker, coinBalance.TotalCoins, coinBalance.BTCBalance, round(coinBalance.USDBalance, 2),
-                        coin.Locked, coin.DesiredPercentage, coinBalance.get_current_percentage(indexInfo.TotalBTCVal), coin.DistanceFromTarget]
+                        coin.Locked, coin.DesiredPercentage, coin.get_current_percentage(indexInfo.TotalBTCVal), coin.get_percent_from_coin_target(coinBalance,indexInfo.TotalBTCVal)]
             cointTableData.append(newArray)
 
         # Create the summary table
