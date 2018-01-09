@@ -58,7 +58,7 @@ class RefactoredBalanceManager:
         if amount is not None:
             logger.debug("checking to see if amount is greater than trade threshold")
 
-            over_threshold = float(amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
+            over_threshold = abs(float(amount)) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
             if over_threshold is True:
                 if is_over is False:
                     logger.debug("checking to see if intended amount of purchase is available in BTC")
