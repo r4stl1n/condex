@@ -16,7 +16,7 @@ from config import CondexConfig
 from Util import Util
 from managers.DatabaseManager import DatabaseManager
 from managers.ExchangeManager import ExchangeManager
-from managers.BalanceManager import BalanceManager
+from managers.RefactoredBalanceManager import RefactoredBalanceManager
 
 
 app = Celery('tasks', backend='amqp', broker='amqp://')
@@ -196,7 +196,7 @@ def increment_rebalance_tick_task():
 
 @app.task(name='Tasks.perform_algo_task')
 def perform_algo_task():
-    balanceManager = BalanceManager()
+    balanceManager = RefactoredBalanceManager()
 
     coinsAboveThreshold = {}
     coinsEligibleForIncrease = {}
@@ -214,22 +214,25 @@ def perform_algo_task():
             else:
                 # Generate our winners/losers list
                 for indexedCoin in DatabaseManager.get_all_index_coin_models():
-                    if indexedCoin.DistanceFromTarget >= indexInfo.BalanceThreshold:
-                        coinsAboveThreshold[indexedCoin.Ticker] = indexedCoin.DistanceFromTarget
-                    elif abs(indexedCoin.DistanceFromTarget) >= indexInfo.BalanceThreshold:
-                        coinsEligibleForIncrease[indexedCoin.Ticker] = indexedCoin.DistanceFromTarget
+                    if indexedCoin.Ticker != "BTC":
+                        coinBalance = DatabaseManager.get_coin_balance_model(indexedCoin.Ticker)
+                        coin_off_percent = indexedCoin.get_percent_from_coin_target(coinBalance, indexInfo.TotalBTCVal)
+                        if coin_off_percent >= indexInfo.BalanceThreshold:
+                            coinsAboveThreshold[indexedCoin.Ticker] = coin_off_percent
+                        elif abs(coin_off_percent) >= indexInfo.BalanceThreshold:
+                            coinsEligibleForIncrease[indexedCoin.Ticker] = coin_off_percent
 
                 # Sort our tables
                 coinsAboveThreshold = Util.tuple_list_to_dict(sorted(coinsAboveThreshold.items(), key=lambda pair: pair[1], reverse=True))
                 coinsEligibleForIncrease = Util.tuple_list_to_dict(sorted(coinsEligibleForIncrease.items(), key=lambda pair: pair[1], reverse=True))
-                balanceManager.rebalance_coins(coinsAboveThreshold, coinsEligibleForIncrease, percentage_btc_amount, app)
+                balanceManager.rebalance_coins(coinsAboveThreshold, coinsEligibleForIncrease, app)
                 
     except Exception as e:
         logger.exception(e)
 
 
 @app.task(name='Tasks.perform_rebalance_task')
-def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, eligibleTicker, elgibleBuyAmount):
+def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, eligibleTicker, eligibleBuyAmount):
     
     coinSellIncomplete = True
     coinBuyIncomplete = True
@@ -318,11 +321,11 @@ def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, eligibleTicker,
                         if CondexConfig.DEBUG == True:
                             logger.debug("Putting in buy order")
                         else:
-                            logger.info("Buying " + str(elgibleBuyAmount) + " of " + eligibleTicker + " at " + str(eligibleCoinTicker.BTCVal))
+                            logger.info("Buying " + str(eligibleBuyAmount) + " of " + eligibleTicker + " at " + str(eligibleCoinTicker.BTCVal))
                             if partial_filled == True:
                                 buyOrderUUID = em.create_buy_order(eligibleTicker, partial_fill_amount/eligibleCoinTicker.BTCVal, eligibleCoinTicker.BTCVal)['id']
                             else:
-                                buyOrderUUID = em.create_buy_order(eligibleTicker, elgibleBuyAmount, eligibleCoinTicker.BTCVal)['id']
+                                buyOrderUUID = em.create_buy_order(eligibleTicker, eligibleBuyAmount, eligibleCoinTicker.BTCVal)['id']
                             time.sleep(60*indexInfo.OrderTimeout)
 
                         # Check order succeded through
@@ -371,7 +374,7 @@ def perform_rebalance_task(rebalanceTicker, rebalanceSellAmount, eligibleTicker,
 #####################
 
 @app.task(name='Tasks.perform_buy_task')
-def perform_buy_task(elgibleTicker, elgibleBuyAmount):
+def perform_buy_task(eligibleTicker, eligibleBuyAmount):
     
 
     coinBuyIncomplete = True
@@ -383,7 +386,7 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
 
     retryLimit = indexInfo.OrderRetryAmount
 
-    eligibleCoinTicker = DatabaseManager.get_ticker_model(elgibleTicker+"/BTC")
+    eligibleCoinTicker = DatabaseManager.get_ticker_model(eligibleTicker+"/BTC")
 
     em = ExchangeManager()
 
@@ -392,13 +395,13 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
         partial_fill_amount = 0
         partial_filled = False
 
-        DatabaseManager.create_coin_lock_model(elgibleTicker)
-
+        DatabaseManager.create_coin_lock_model(eligibleTicker)
+ 
         while coinBuyIncomplete:
-            
+
             if coinBuyRetryCount >= retryLimit:
                 coinBuyIncomplete = False
-                logger.info("Buying of coin " + elgibleTicker + " failed after " + str(coinBuyRetryCount) + " attempts")
+                logger.info("Buying of coin " + rebalanceTicker + " failed after " + str(coinBuyRetryCount) + " attempts")
                 break
                 # Cancel Order
             else:
@@ -406,8 +409,11 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
                 if CondexConfig.DEBUG == True:
                     logger.debug("Putting in buy order")
                 else:
-                    logger.info("Buying " + str(elgibleBuyAmount) + " of " + elgibleTicker + " at " + str(eligibleCoinTicker.BTCVal)) 
-                    buyOrderUUID = em.create_buy_order(elgibleTicker, elgibleBuyAmount, eligibleCoinTicker.BTCVal)['id']
+                    logger.info("Buying %s of %s at %s", eligibleBuyAmount, eligibleTicker, eligibleCoinTicker.BTCVal)
+                    if partial_filled == True:
+                        buyOrderUUID = em.create_buy_order(eligibleTicker, partial_fill_amount/eligibleCoinTicker.BTCVal, eligibleCoinTicker.BTCVal)['id']
+                    else:
+                        buyOrderUUID = em.create_buy_order(eligibleTicker, eligibleBuyAmount, eligibleCoinTicker.BTCVal)['id']
                     time.sleep(60*indexInfo.OrderTimeout)
 
                 # Check order succeded through
@@ -418,9 +424,9 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
 
                     order_result = em.fetch_order(buyOrderUUID)
                     order_filled_amount = order_result['filled']
-                    
+
                     if order_result['status'] == "closed":
-                        logger.info("Bought coin " + elgibleTicker + " for " + str(order_result['price']))
+                        logger.info("Bought coin " + eligibleTicker + " for " + str(order_result['price']))
                         coinBuyIncomplete = False
 
                     elif (order_filled_amount*eligibleCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
@@ -439,11 +445,86 @@ def perform_buy_task(elgibleTicker, elgibleBuyAmount):
                                 coinBuyIncomplete = False
                                 pass # order failed to cancel got filled previously
                             logger.debug("Buy Order Timeout Reached")
-                        time.sleep(10) #Magic Number 
+                        time.sleep(10) #Magic Number
 
     except Exception as e:
         logger.exception(e)
 
     finally:
         if CondexConfig.DEBUG != True:
-            DatabaseManager.delete_coin_lock_model(elgibleTicker)
+            DatabaseManager.delete_coin_lock_model(eligibleTicker)
+
+@app.task(name='Tasks.perform_sell_task')
+def perform_sell_task(rebalanceTicker, rebalanceSellAmount):
+    
+
+    coinSellIncomplete = True
+    coinSellRetryCount = 0
+    sellOrderUUID = ""
+
+
+    indexInfo = DatabaseManager.get_index_info_model()
+
+    retryLimit = indexInfo.OrderRetryAmount
+
+    eligibleCoinTicker = DatabaseManager.get_ticker_model(rebalanceTicker+"/BTC")
+
+    em = ExchangeManager()
+
+    try:
+
+        partial_fill_amount = 0
+        partial_filled = False
+
+        DatabaseManager.create_coin_lock_model(rebalanceTicker)
+
+        while coinSellIncomplete:
+
+            if coinSellRetryCount >= retryLimit:
+                coinSellFailed = True
+                coinSellIncomplete = False
+                break
+                # Cancel Order
+            else:
+
+                rebalanceCoinTicker = DatabaseManager.get_ticker_model(rebalanceTicker+"/BTC")
+
+                if CondexConfig.DEBUG == True:
+                    logger.info("Placing Sell Order For " + rebalanceTicker+"/BTC")
+                else:
+                    logger.info("Selling " + str(rebalanceSellAmount) + " of " + rebalanceTicker + " at " + str(rebalanceCoinTicker.BTCVal))
+                    sellOrderUUID = em.create_sell_order(rebalanceTicker, rebalanceSellAmount, rebalanceCoinTicker.BTCVal)['id']
+                    time.sleep(60*indexInfo.OrderTimeout)
+
+                # Check order succeded through
+                if CondexConfig.DEBUG == True:
+                    logger.debug("Fetching order")
+                    coinSellIncomplete = False
+                else:
+
+                    order_result = em.fetch_order(sellOrderUUID)
+                    order_filled_amount = order_result['filled']
+
+                    if order_result['status'] == "closed":
+                        logger.debug("Sold coin " + rebalanceTicker + " for " + str(order_result['price']))
+                        coinSellIncomplete = False
+                    elif (order_filled_amount*rebalanceCoinTicker.BTCVal) > CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT and order_result['status'] == "open":
+                        em.cancel_order(sellOrderUUID)
+                        logger.debug("Sold partial of coin " + rebalanceTicker + " for " + str(order_result['price']))
+                        coinSellIncomplete = False
+                        partial_filled = True
+                        partial_fill_amount = order_filled_amount*rebalanceCoinTicker.BTCVal
+                    else:
+                        coinSellRetryCount = coinSellRetryCount + 1
+                        if CondexConfig.DEBUG == True:
+                            logger.debug("Canceling sell order")
+                        else:
+                            em.cancel_order(sellOrderUUID)
+                            logger.debug("Sell Order Timeout Reached")
+                        time.sleep(10) #Magic Number 
+    except Exception as e:
+        logger.exception(e)
+
+    finally:
+        if CondexConfig.DEBUG != True:
+            DatabaseManager.delete_coin_lock_model(rebalanceTicker)
