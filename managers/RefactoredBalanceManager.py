@@ -46,16 +46,16 @@ class RefactoredBalanceManager:
 
         index_info = DatabaseManager.get_index_info_model()
         coin_balance = DatabaseManager.get_coin_balance_model(coin)
-        indexed_coin = DatabaseManager.get_index_coin_model(coin)
+        indexed_coin = DatabaseManager.get_index_coin_model(coin)""
         amount = None
         off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCVal)
         logger.info("coin off percentage is %s with current coin balance of %s", off, coin_balance.BTCBalance)
         if is_over is True:
             logger.info("Coin %s over threshold, calculating off percentage", coin)
-            amount = round(coin_balance.BTCBalance * (off/100), 8)
+            amount = round(coin_balance.BTCBalance / (1 - (off/100)), 8)
         else:
             logger.info("Coin %s under threshold, calculating off percentage", coin)
-            amount = round(coin_balance.BTCBalance * (abs(off)/100), 8)
+            amount = round(coin_balance.BTCBalance * (1 - (abs(off)/100)), 8)
 
         logger.info("Amount calculated as %s", amount)
         if amount == 0:
