@@ -85,6 +85,7 @@ class RefactoredBalanceManager:
                     if btc_off <= 0:
                         return None
                     balance_available = round(btc_balance.BTCBalance * (btc_off / 100), 8)
+                    logger.debug("Available BTC balance %s", balance_available)
                     if balance_available >= amount:
                         return amount
 
