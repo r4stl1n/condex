@@ -59,6 +59,7 @@ class ExchangeManager:
             try:
                 market = self.markets[pair_string]
                 min_trade_size = market["info"]["MinTradeSize"]
+                logger.debug("checking order %s against min trade size: %s", amount, min_trade_size)
                 return float(amount) >= min_trade_size
 
             except KeyError as e:
