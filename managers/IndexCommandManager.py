@@ -94,6 +94,7 @@ class IndexCommandManager:
         indexedCoins = DatabaseManager.get_all_index_coin_models()
         indexedCoin = DatabaseManager.get_index_coin_model(coin.upper())
 
+
         for inCoins in indexedCoins:
             if inCoins.Locked == True:
                 totalLockedPercentage = round(totalLockedPercentage + inCoins.DesiredPercentage, 2)
@@ -114,7 +115,6 @@ class IndexCommandManager:
                     if float(percentage) > indexedCoin.DesiredPercentage:
                         if totalUnlockedPercentage + indexedCoin.DesiredPercentage > float(percentage):
                             if self.coin_supported_check(coin.upper()):
-
                                 percentageToAdd = 0.0
 
                                 if totalUnlockedCoinsCount > 0:
@@ -394,18 +394,16 @@ class IndexCommandManager:
 
         for inCoins in indexedCoins:
             if inCoins.Locked == True:
-                totalLockedPercentage = totalLockedPercentage + inCoins.DesiredPercentage
+                totalLockedPercentage = round(totalLockedPercentage + inCoins.DesiredPercentage, 2)
             else:
                 totalUnlockedCoinsCount = totalUnlockedCoinsCount + 1
-
-        totalPercentage = totalPercentage + totalLockedPercentage
+        totalPercentage = totalLockedPercentage
         totalUnlockedPercentage = totalUnlockedPercentage - totalLockedPercentage
         averagePercentage = round(totalUnlockedPercentage / totalUnlockedCoinsCount, 2)
 
         logger.info("Setting default allocation to " + str(averagePercentage))
         for inCoins in indexedCoins:
             if inCoins.Locked == False:
-                totalPercentage = totalPercentage + averagePercentage
                 if totalPercentage + averagePercentage > 100:
                    desiredPercentage = 100 - totalPercentage
                 else:
