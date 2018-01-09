@@ -453,7 +453,7 @@ def perform_buy_task(eligibleTicker, eligibleBuyAmount):
         if CondexConfig.DEBUG != True:
             DatabaseManager.delete_coin_lock_model(eligibleTicker)
 
-@app.task(name='Tasks.perform_buy_task')
+@app.task(name='Tasks.perform_sell_task')
 def perform_sell_task(rebalanceTicker, rebalanceSellAmount):
     
 
