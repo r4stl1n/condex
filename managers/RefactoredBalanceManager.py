@@ -46,7 +46,7 @@ class RefactoredBalanceManager:
 
         index_info = DatabaseManager.get_index_info_model()
         coin_balance = DatabaseManager.get_coin_balance_model(coin)
-        indexed_coin = DatabaseManager.get_index_coin_model(coin)""
+        indexed_coin = DatabaseManager.get_index_coin_model(coin)
         amount = None
         off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCVal)
         logger.info("coin off percentage is %s with current coin balance of %s", off, coin_balance.BTCBalance)
