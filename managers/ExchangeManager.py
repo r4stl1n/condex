@@ -36,17 +36,34 @@ class ExchangeManager:
         else:
             try:
                 market = self.markets[ticker_1 + "/" + ticker_2]
-                if market == False:
+                if market["active"] == False:
                     logger.warn("Market %s/%s inactive", ticker_1, ticker_2)
-                return market
+                    return False
+                return True
             except KeyError as e:
                 try:
                     market = self.markets[ticker_2 + "/" + ticker_1]
-                    if market == False:
+                    if market["active"] == False:
                         logger.warn("Market %s/%s inactive", ticker_2, ticker_1)
-                    return market
+                        return False
+                    return True
                 except KeyError as e:
                     logger.exception("Cannot make pair from %s and %s", ticker_1, ticker_2)
+
+    def check_min_buy(self, amount, pair_string):
+        if self.markets is None:
+            self.load_markets()
+        if len(self.markets) == 0:
+            return False
+        else:
+            try:
+                market = self.markets[pair_string]
+                min_coins = 1.0
+                price = 2.0
+                return (float(amount)/price) >= price
+
+            except KeyError as e:
+                return False
 
     def load_markets(self):
         try:
