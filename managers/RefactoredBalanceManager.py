@@ -49,17 +49,17 @@ class RefactoredBalanceManager:
         indexed_coin = DatabaseManager.get_index_coin_model(coin)
         amount = None
         off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCVal)
-        loggger.info("coin off percentage is %s with current coin balance of %s", off, coin_balance.BTCBalance)
+        logger.info("coin off percentage is %s with current coin balance of %s", off, coin_balance.BTCBalance)
         if is_over is True:
-            loggger.info("Coin %s over threshold, calculating off percentage", coin)
+            logger.info("Coin %s over threshold, calculating off percentage", coin)
             amount = round(coin_balance.BTCBalance * (off/100), 8)
         else:
-            loggger.info("Coin %s under threshold, calculating off percentage", coin)
+            logger.info("Coin %s under threshold, calculating off percentage", coin)
             amount = round(coin_balance.BTCBalance * (abs(off)/100), 8)
 
-        loggger.info("Amount calculated as %s", amount)
+        logger.info("Amount calculated as %s", amount)
         if amount == 0:
-            loggger.info("Zero amount detected for %s. Attemping to buy 2x the minimum order.", coin)
+            logger.info("Zero amount detected for %s. Attemping to buy 2x the minimum order.", coin)
             pair_string = coin
             if pair_string == "BTC":
                 pair_string += "/USDT"
@@ -69,16 +69,16 @@ class RefactoredBalanceManager:
             if min_buy is not None:
                 amount = round(min_buy * 2, 8)
             else:
-                loggger.info("Zero amount of coin %s and market info cannot be found")
+                logger.info("Zero amount of coin %s and market info cannot be found")
                 amount = None
 
         if amount is not None:
-            loggger.info("checking to see if amount %s is greater than trade threshold %s", amount, CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
+            logger.info("checking to see if amount %s is greater than trade threshold %s", amount, CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
 
             over_threshold = float(amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
             if over_threshold is True:
                 if is_over is False:
-                    loggger.info("checking to see if %s is available in BTC", amount)
+                    logger.info("checking to see if %s is available in BTC", amount)
                     balance_available = 0.0
                     btc_balance = DatabaseManager.get_coin_balance_model("BTC")
                     btc_indexed_coin = DatabaseManager.get_index_coin_model("BTC")
@@ -87,7 +87,7 @@ class RefactoredBalanceManager:
                     if btc_off <= 0:
                         return None
                     balance_available = round(btc_balance.BTCBalance * (btc_off / 100), 8)
-                    loggger.info("Available BTC balance %s", balance_available)
+                    logger.info("Available BTC balance %s", balance_available)
                     if balance_available >= amount:
                         return amount
 
@@ -100,7 +100,7 @@ class RefactoredBalanceManager:
                         amount = None
                     logger.warning("The amount to trade %s not available currently", amount)
                 else:
-                    loggger.info("selling %s %s to BTC/USDT", amount, coin)
+                    logger.info("selling %s %s to BTC/USDT", amount, coin)
             else:
                 logger.warning("Coin %s amount %s not over trade threshold", coin, amount)
                 amount = None
