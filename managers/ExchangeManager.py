@@ -58,7 +58,7 @@ class ExchangeManager:
         else:
             try:
                 return self.markets[pair_string]
-            except KeyError e:
+            except KeyError as e:
                 logger.exception(e)
                 return None
 
