@@ -56,12 +56,12 @@ class RefactoredBalanceManager:
             amount = round(coin_balance.BTCBalance * (abs(off)/100), 8)
 
         if amount is not None:
-            logger.debug("checking to see if amount is greater than trade threshold")
+            logger.debug("checking to see if amount %s is greater than trade threshold", amount)
 
-            over_threshold = abs(float(amount)) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
+            over_threshold = float(amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
             if over_threshold is True:
                 if is_over is False:
-                    logger.debug("checking to see if intended amount of purchase is available in BTC")
+                    logger.debug("checking to see if %s is available in BTC", amount)
                     balance_available = 0.0
                     btc_balance = DatabaseManager.get_coin_balance_model("BTC")
                     btc_indexed_coin = DatabaseManager.get_index_coin_model("BTC")
@@ -84,8 +84,8 @@ class RefactoredBalanceManager:
                 else:
                     logger.debug("selling %s %s to BTC/USDT", amount, coin)
             else:
-                amount = None
                 logger.warning("Coin %s amount %s not over trade threshold", coin, amount)
+                amount = None
 
         return amount
 
