@@ -113,13 +113,16 @@ class RefactoredBalanceManager:
         else:
             string_ticker += "/BTC"
         if self.em.check_min_buy(amount, string_ticker):
+            ticker = self.em.get_ticker(string_ticker)
+            single_coin_cost = ticker["last"]
+            num_coins = round(amount / single_coin_cost, 8)
             DatabaseManager.create_coin_lock_model(coin)
             if is_over is True:
                 logger.debug("selling %s", coin)
-                celery_app.send_task('Tasks.perform_sell_task', args=[coin.upper(), amount])
+                celery_app.send_task('Tasks.perform_sell_task', args=[coin.upper(), num_coins])
             else:
                 logger.debug("buying %s", coin)
-                celery_app.send_task('Tasks.perform_buy_task', args=[coin.upper(), amount])
+                celery_app.send_task('Tasks.perform_buy_task', args=[coin.upper(), num_coins])
         else:
             logger.debug("purchase %s does not meet market minimum")
 
