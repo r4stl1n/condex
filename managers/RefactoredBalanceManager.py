@@ -55,7 +55,7 @@ class RefactoredBalanceManager:
             amount = round(coin_balance.BTCBalance / (1 - (off/100)), 8)
         else:
             logger.info("Coin %s under threshold, calculating off percentage", coin)
-            amount = round(coin_balance.BTCBalance / (1 - (abs(off)/100)), 8)
+            amount = round((coin_balance.BTCBalance / (1 - (abs(off)/100))) - coin_balance.BTCBalance, 8)
 
         logger.info("Amount calculated as %s", amount)
         if amount == 0:
