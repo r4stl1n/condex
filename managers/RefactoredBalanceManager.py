@@ -28,7 +28,9 @@ class RefactoredBalanceManager:
             amount = self.calculate_amount(coin, is_over)
             if amount is None:
                 return
-            self.handle_trade(coin, amount, is_over, celery_app)
+
+            if not coin == "BTC":
+                self.handle_trade(coin, amount, is_over, celery_app)
 
         else:
             logger.warning("Coin %s is locked and cannot be traded", coin)
