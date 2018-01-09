@@ -97,7 +97,7 @@ class RefactoredBalanceManager:
             string_ticker += "/USDT"
         else:
             string_ticker += "/BTC"
-        if em.check_min_buy(amount, string_ticker):
+        if self.em.check_min_buy(amount, string_ticker):
             DatabaseManager.create_coin_lock_model(coin)
             if is_over is True:
                 logger.debug("selling %s", coin)
