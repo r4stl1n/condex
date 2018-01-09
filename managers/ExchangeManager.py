@@ -59,6 +59,7 @@ class ExchangeManager:
             try:
                 return self.markets[pair_string]
             except KeyError e:
+                logger.exception(e)
                 return None
 
     def check_min_buy(self, amount, pair_string):
