@@ -50,20 +50,25 @@ class ExchangeManager:
                 except KeyError as e:
                     logger.exception("Cannot make pair from %s and %s", ticker_1, ticker_2)
 
-    def check_min_buy(self, amount, pair_string):
+    def get_min_buy(self, pair_string):
         if self.markets is None:
             self.load_markets()
         if len(self.markets) == 0:
             return False
         else:
             try:
-                market = self.markets[pair_string]
-                min_trade_size = market["info"]["MinTradeSize"]
-                logger.debug("checking order %s against min trade size: %s", amount, min_trade_size)
-                return float(amount) >= min_trade_size
+                return self.markets[pair_string]
+            except KeyError e:
+                return None
 
-            except KeyError as e:
-                return False
+    def check_min_buy(self, amount, pair_string):
+        market = self.get_min_buy(pair_string)
+        if market is None:
+            return False
+
+        min_trade_size = market["info"]["MinTradeSize"]
+        logger.debug("checking order %s against min trade size: %s", amount, min_trade_size)
+        return float(amount) >= min_trade_size
 
     def load_markets(self):
         try:
