@@ -50,15 +50,16 @@ class RefactoredBalanceManager:
         amount = None
         off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCVal)
         logger.info("coin off percentage is %s with current coin balance of %s", off, coin_balance.BTCBalance)
-        if is_over is True:
-            logger.info("Coin %s over threshold, calculating off percentage", coin)
-            amount = round(coin_balance.BTCBalance / (1 - (off/100)), 8)
-        else:
-            logger.info("Coin %s under threshold, calculating off percentage", coin)
-            amount = round((coin_balance.BTCBalance / (1 - (abs(off)/100))) - coin_balance.BTCBalance, 8)
+        if coin_balance.BTCBalance > 0:
+            if is_over is True:
+                logger.info("Coin %s over threshold, calculating off percentage", coin)
+                amount = round(coin_balance.BTCBalance / (1 - (off/100)), 8)
+            else:
+                logger.info("Coin %s under threshold, calculating off percentage", coin)
+                amount = round((coin_balance.BTCBalance / (1 - (abs(off)/100))) - coin_balance.BTCBalance, 8)
 
-        logger.info("Amount calculated as %s", amount)
-        if amount == 0:
+            logger.info("Amount calculated as %s", amount)
+        if amount == None or amount == 0:
             logger.info("Zero amount detected for %s. Attemping to buy 2x the minimum order.", coin)
             pair_string = coin
             if pair_string == "BTC":
