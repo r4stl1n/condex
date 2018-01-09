@@ -58,9 +58,8 @@ class ExchangeManager:
         else:
             try:
                 market = self.markets[pair_string]
-                min_coins = 1.0
-                price = 2.0
-                return (float(amount)/price) >= price
+                min_trade_size = market["info"]["MinTradeSize"]
+                return float(amount) >= min_trade_size
 
             except KeyError as e:
                 return False
@@ -73,7 +72,7 @@ class ExchangeManager:
             if market_response is not None:
                 self.markets = {}
                 for market in market_response:
-                    self.markets[market["symbol"]] = market["active"]
+                    self.markets[market["symbol"]] = market
         
         except ccxt.DDoSProtection as e:
             logger.exception(e)
