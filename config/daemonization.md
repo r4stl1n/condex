@@ -11,6 +11,16 @@ This assumes Ubuntu installation. Instructions will vary based on distribution
 3. edit the token `WorkingDirectory` to be the path where you cloned Condex
 4. as a sudoer run `sudo systemctl daemon-reload`. You'll need to run this step any time you modify the condex.service file
 
+### Create the PID dir
+`sudo mkdir /var/run/celery`
+change ownership of the dir
+`sudo chown -R celery:celery /var/run/celery`
+
+### Create the log dir
+`sudo mkdir /var/log/celery`
+change ownership of the dir
+`sudo chown -R celery:celery /var/log/celery`
+
 ### Starting the Daemon
 `sudo systemctl start condex`
 

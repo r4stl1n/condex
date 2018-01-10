@@ -1,5 +1,5 @@
 [Unit]
-Description=Celery Service
+Description=Condex Service
 After=network.target
 
 [Service]

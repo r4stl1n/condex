@@ -1,5 +1,4 @@
 # Name of nodes to start
-# here we have a single node
 CELERYD_NODES="w1 w2"
 
 # Absolute celpath to the 'celery' command:
@@ -11,7 +10,7 @@ CELERY_APP="Tasks"
 CELERYD_MULTI="multi"
 
 # Extra command-line arguments to the worker
-CELERYD_OPTS="-Q:w1 -c:w1 8 -n:w1 Condex-Trade-Worker -Q:w2 -c:w2 2 -n:w2 Condex-Update-Worker --loglevel=INFO"
+CELERYD_OPTS="-B -Q:w1 Condex-Trade-Worker -c:w1 8 -n:w1 Condex-Trade-Worker -Q:w2 Condex-Update-Worker -c:w2 2 -n:w2 Condex-Update-Worker --loglevel=INFO"
 
 # %N will be replaced with the first part of the nodename.
 CELERYD_LOG_FILE="/var/log/celery/condex.log"
