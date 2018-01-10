@@ -10,6 +10,7 @@ Requirements:
 * RabbitMQ Installed
 * Python installed - this app should work with both Python 2.7 and Python 3
 * Pip installed
+* Screen
 
 ##### Configure your Bittrex API key
 1. Create a copy of the configuration template
@@ -41,9 +42,28 @@ In another terminal run the following:
 ```text
 $ cd condex
 
+$ screen
+
 $ source .env/bin/activate
 
-$ celery -A Tasks worker -B --loglevel=DEBUG --concurrency=4
+$ celery -A Tasks worker -B --loglevel=INFO --concurrency=8 -Q Condex-Trade-Queue -n Condex-Trade-Worker
+
+$ exit
+
+```
+
+In another terminal run the following:
+```text
+$ cd condex
+
+$ screen
+
+$ source .env/bin/activate
+
+$ celery -A Tasks worker -B --loglevel=INFO --concurrency=2 -Q Condex-Update-Queue -n Condex-Update-Worker
+
+$ exit
+
 ```
 
 

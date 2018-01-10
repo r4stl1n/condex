@@ -21,25 +21,25 @@ from managers.RefactoredBalanceManager import RefactoredBalanceManager
 
 app = Celery('tasks', backend='amqp', broker='amqp://')
 
-app.conf.task_default_queue = 'trading'
+app.conf.task_default_queue = 'Condex-Trade-Queue'
 
 app.conf.beat_schedule = {
     'supported_coins_task':{
         'task':'Tasks.supported_coins_task',
         'schedule': timedelta(seconds=45),
-        'options': {'queue' : 'update'}
+        'options': {'queue' : 'Condex-Update-Queue'}
     },
 
     'wallet_update_task':{
         'task':'Tasks.wallet_update_task',
         'schedule': timedelta(seconds=50),
-        'options': {'queue' : 'update'}
+        'options': {'queue' : 'Condex-Update-Queue'}
     },
 
     'increment_rebalance_tick_task':{
         'task':'Tasks.increment_rebalance_tick_task',
         'schedule': timedelta(seconds=60),
-        'options': {'queue' : 'update'}
+        'options': {'queue' : 'Condex-Update-Queue'}
     }
 }
 
