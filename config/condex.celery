@@ -1,0 +1,18 @@
+# Name of nodes to start
+# here we have a single node
+CELERYD_NODES="w1 w2"
+
+# Absolute path to the 'celery' command:
+CELERY_BIN="<path to venv>/bin/celery"
+
+CELERY_APP="Tasks"
+
+# How to call manage.py
+CELERYD_MULTI="multi"
+
+# Extra command-line arguments to the worker
+CELERYD_OPTS="-Q:w1 -c:w1 8 -n:w1 Condex-Trade-Worker -Q:w2 -c:w2 2 -n:w2 Condex-Update-Worker --loglevel=INFO"
+
+# %N will be replaced with the first part of the nodename.
+CELERYD_LOG_FILE="/var/log/celery/celeryd.log"
+CELERYD_PID_FILE="/var/run/celery/%N.pid"
