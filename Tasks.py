@@ -21,24 +21,28 @@ from managers.RefactoredBalanceManager import RefactoredBalanceManager
 
 app = Celery('tasks', backend='amqp', broker='amqp://')
 
-app.conf.update(
-    CELERYBEAT_SCHEDULE={
-        'supported_coins_task':{
-            'task':'Tasks.supported_coins_task',
-            'schedule': timedelta(seconds=45)
-        },
+app.conf.task_default_queue = 'Condex-Trade-Queue'
 
-        'wallet_update_task':{
-            'task':'Tasks.wallet_update_task',
-            'schedule': timedelta(seconds=50)
-        },
+app.conf.beat_schedule = {
+    'supported_coins_task':{
+        'task':'Tasks.supported_coins_task',
+        'schedule': timedelta(seconds=45),
+        'options': {'queue' : 'Condex-Update-Queue'}
+    },
 
-        'increment_rebalance_tick_task':{
-            'task':'Tasks.increment_rebalance_tick_task',
-            'schedule': timedelta(seconds=60)
-        }
+    'wallet_update_task':{
+        'task':'Tasks.wallet_update_task',
+        'schedule': timedelta(seconds=50),
+        'options': {'queue' : 'Condex-Update-Queue'}
+    },
+
+    'increment_rebalance_tick_task':{
+        'task':'Tasks.increment_rebalance_tick_task',
+        'schedule': timedelta(seconds=60),
+        'options': {'queue' : 'Condex-Update-Queue'}
     }
-)
+}
+
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
