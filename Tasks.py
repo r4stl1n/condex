@@ -23,27 +23,26 @@ app = Celery('tasks', backend='amqp', broker='amqp://')
 
 app.conf.task_default_queue = 'trading'
 
-app.conf.update(
-    CELERYBEAT_SCHEDULE={
-        'supported_coins_task':{
-            'task':'Tasks.supported_coins_task',
-            'schedule': timedelta(seconds=45),
-            'options': {'queue' : 'update'}
-        },
+app.conf.beat_schedule = {
+    'supported_coins_task':{
+        'task':'Tasks.supported_coins_task',
+        'schedule': timedelta(seconds=45),
+        'options': {'queue' : 'update'}
+    },
 
-        'wallet_update_task':{
-            'task':'Tasks.wallet_update_task',
-            'schedule': timedelta(seconds=50),
-            'options': {'queue' : 'update'}
-        },
+    'wallet_update_task':{
+        'task':'Tasks.wallet_update_task',
+        'schedule': timedelta(seconds=50),
+        'options': {'queue' : 'update'}
+    },
 
-        'increment_rebalance_tick_task':{
-            'task':'Tasks.increment_rebalance_tick_task',
-            'schedule': timedelta(seconds=60),
-            'options': {'queue' : 'update'}
-        }
+    'increment_rebalance_tick_task':{
+        'task':'Tasks.increment_rebalance_tick_task',
+        'schedule': timedelta(seconds=60),
+        'options': {'queue' : 'update'}
     }
-)
+}
+
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
