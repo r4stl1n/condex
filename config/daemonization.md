@@ -20,3 +20,5 @@ This assumes Ubuntu installation. Instructions will vary based on distribution
 ### Restarting the Daemon
 `sudo systemctl restart condex`
 
+### Monitoring Log Output
+`tail -f /var/log/celery/condex.log`
