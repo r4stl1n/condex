@@ -49,6 +49,7 @@ class ShowCommandManager:
         sys.stdout.write('\n')
 
     def show_stats(self):
+
         indexInfo = IndexInfoModel.get(id=1)
 
         # Create the Index Table
@@ -102,3 +103,9 @@ class ShowCommandManager:
         for line in  pyGraph.graph('Index Distribution', data=data):
             sys.stdout.write(line + "\n")
         sys.stdout.write("\n")
+
+    def show_threshold(self):
+
+        indexInfo = IndexInfoModel.get(id=1)
+
+        sys.stdout.write(str(indexInfo.BalanceThreshold)+"\n")
