@@ -26,6 +26,7 @@ class RefactoredBalanceManager:
                     return
 
             amount = self.calculate_amount(coin, is_over)
+
             if amount is None:
                 return
 
@@ -50,6 +51,7 @@ class RefactoredBalanceManager:
         amount = None
         off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCVal)
         logger.info("coin off percentage is %s with current coin balance of %s", off, coin_balance.BTCBalance)
+
         if coin_balance.BTCBalance > 0:
             if is_over is True:
                 logger.info("Coin %s over threshold, calculating off percentage", coin)
@@ -62,6 +64,7 @@ class RefactoredBalanceManager:
                 amount = round((coin_balance.BTCBalance / (1 - (abs(off)/100))) - coin_balance.BTCBalance, 8)
 
             logger.info("Amount calculated as %s", amount)
+
         if amount == None or amount == 0:
             logger.info("Zero amount detected for %s. Attemping to buy 2x the minimum order.", coin)
             pair_string = coin
@@ -69,7 +72,9 @@ class RefactoredBalanceManager:
                 pair_string += "/USDT"
             else:
                 pair_string += "/BTC"
+
             min_buy = self.em.get_min_buy_btc(pair_string)
+            
             if min_buy is not None:
                 amount = round(min_buy * 2, 8)
             else:
@@ -80,6 +85,8 @@ class RefactoredBalanceManager:
             logger.info("checking to see if amount %s is greater than trade threshold %s", amount, CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
 
             over_threshold = float(amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
+
+
             if over_threshold is True:
                 if is_over is False:
                     logger.info("checking to see if %s is available in BTC", amount)
@@ -90,6 +97,7 @@ class RefactoredBalanceManager:
                     btc_off = btc_indexed_coin.get_percent_from_coin_target(btc_balance, index_info.TotalBTCVal)
                     if btc_off <= 0:
                         return None
+
                     balance_available = round(btc_balance.BTCBalance * (btc_off / 100), 8)
                     logger.info("Available BTC balance %s", balance_available)
                     if balance_available >= amount:
@@ -97,6 +105,9 @@ class RefactoredBalanceManager:
 
                     #See if 1x the threshold is available
                     single_threshold_amount = round(amount / (index_info.BalanceThreshold/100), 8)
+
+                    if not single_threshold_amount >= em.get_min_buy_btc(pair_string):
+                        single_threshold_amount = em.get_min_buy_btc(pair_string)
 
                     if balance_available >= single_threshold_amount and float(single_threshold_amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT):
                         return single_threshold_amount
