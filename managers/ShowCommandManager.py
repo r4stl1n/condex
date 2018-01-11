@@ -105,7 +105,13 @@ class ShowCommandManager:
         sys.stdout.write("\n")
 
     def show_threshold(self):
+        
+        indexInfo = DatabaseManager.get_index_info_model()
+        sys.stdout.write("\nCurrent Rebalance Threshold\n")
 
-        indexInfo = IndexInfoModel.get(id=1)
+        summary_table_data = [["Active", "Balance Threshold", "Order Timeout", "Rebalance Tick Setting"]]
+        summary_table_data.append([indexInfo.Active, indexInfo.BalanceThreshold, indexInfo.OrderTimeout, indexInfo.RebalanceTickSetting])
 
-        sys.stdout.write(str(indexInfo.BalanceThreshold)+"\n")
+        summary_table = AsciiTable(summary_table_data)
+        sys.stdout.write(summary_table.table)
+        sys.stdout.write("\n")
