@@ -39,6 +39,7 @@ $ python main.py
 ```
 
 In another terminal run the following:
+
 ```text
 $ cd condex
 
@@ -46,11 +47,12 @@ $ screen
 
 $ source .env/bin/activate
 
-$ celery -A Tasks worker -B --loglevel=INFO --concurrency=8 -Q Condex-Trade-Queue -n Condex-Trade-Worker
+$ celery -A Tasks worker -B --loglevel=INFO --concurrency=1 -Q Condex-Update-Queue -n Condex-Update-Worker
 
 $ exit
 
 ```
+
 
 In another terminal run the following:
 ```text
@@ -60,7 +62,7 @@ $ screen
 
 $ source .env/bin/activate
 
-$ celery -A Tasks worker -B --loglevel=INFO --concurrency=2 -Q Condex-Update-Queue -n Condex-Update-Worker
+$ celery -A Tasks worker --loglevel=INFO --concurrency=8 -Q Condex-Trade-Queue -n Condex-Trade-Worker
 
 $ exit
 
