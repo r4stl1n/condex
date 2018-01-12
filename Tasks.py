@@ -193,7 +193,7 @@ def increment_rebalance_tick_task():
         rebalanceTick = DatabaseManager.get_rebalance_tick_model()
 
         if rebalanceTick.TickCount >= indexInfo.RebalanceTickSetting:
-            app.send_task('Tasks.perform_algo_task',args=[])
+            app.send_task('Tasks.perform_algo_task',args=[], queue='Condex-Update-Queue')
         else:
             DatabaseManager.update_rebalance_tick_model(rebalanceTick.TickCount + 1)
 
@@ -405,7 +405,7 @@ def perform_buy_task(eligibleTicker, eligibleBuyAmount):
 
             if coinBuyRetryCount >= retryLimit:
                 coinBuyIncomplete = False
-                logger.info("Buying of coin " + rebalanceTicker + " failed after " + str(coinBuyRetryCount) + " attempts")
+                logger.info("Buying of coin " + eligibleTicker  + " failed after " + str(coinBuyRetryCount) + " attempts")
                 break
                 # Cancel Order
             else:
