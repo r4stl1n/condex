@@ -5,6 +5,7 @@ from managers.DatabaseManager import *
 from models.TickerModel import TickerModel
 from models.CoinLockModel import CoinLockModel
 from models.IndexInfoModel import IndexInfoModel
+from models.WalletLockModel import WalletLockModel
 from models.IndexedCoinModel import IndexedCoinModel
 from models.CoinBalanceModel import CoinBalanceModel
 from models.RebalanceTickModel import RebalanceTickModel

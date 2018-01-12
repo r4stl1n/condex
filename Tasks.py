@@ -181,6 +181,18 @@ def wallet_update_task():
     else:
         logger.error("Failed To Update Index Info Model")
 
+
+    walletLockDeleteList = []
+
+    # Clear up the wallet locks.
+    for walletLockModel in DatabaseManager.get_all_wallet_trade_lock_models():
+        if DatabaseManager.get_coin_lock_model(walletLockModel.Ticker) == None:
+            walletLockDeleteList.append(walletLockModel.Ticker)
+
+
+    for walletLockTicker in walletLockDeleteList:
+        DatabaseManager.delete_wallet_trade_lock_model(walletLockTicker)
+
     logger.info("Wallet Update Task Completed")
 
 

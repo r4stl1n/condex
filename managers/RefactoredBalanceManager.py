@@ -19,7 +19,7 @@ class RefactoredBalanceManager:
 
     def handle_coin(self, coin, is_over, celery_app):
         """Handle re-balancing an individual coin."""
-        if DatabaseManager.get_coin_lock_model(coin) is None:
+        if DatabaseManager.get_coin_lock_model(coin) is None and DatabaseManager.get_wallet_trade_lock_model(coin) is None:
             if not coin == "BTC":
                 if not self.em.market_active(coin, "BTC"):
                     logger.error("Market for %s/BTC offline", coin)
@@ -131,10 +131,14 @@ class RefactoredBalanceManager:
         else:
             string_ticker += "/BTC"
         if self.em.check_min_buy(amount, string_ticker):
+            
             ticker = self.em.get_ticker(string_ticker)
             single_coin_cost = ticker["last"]
             num_coins = round(amount / single_coin_cost, 8)
+            
             DatabaseManager.create_coin_lock_model(coin)
+            DatabaseManager.create_wallet_trade_lock_model(coin)
+
             if is_over is True:
                 logger.debug("selling %s", coin)
                 celery_app.send_task('Tasks.perform_sell_task', args=[coin.upper(), num_coins])
