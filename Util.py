@@ -10,6 +10,7 @@ from models.IndexedCoinModel import IndexedCoinModel
 from models.CoinBalanceModel import CoinBalanceModel
 from models.RebalanceTickModel import RebalanceTickModel
 from models.SupportedCoinModel import SupportedCoinModel
+from models.WalletTradeLockModel import WalletTradeLockModel
 
 class Util:
 
@@ -25,7 +26,7 @@ class Util:
         
         try:
             internal_database.create_tables([TickerModel, IndexInfoModel, IndexedCoinModel, SupportedCoinModel,
-                                             CoinBalanceModel, RebalanceTickModel, CoinLockModel])
+                                             CoinBalanceModel, RebalanceTickModel, CoinLockModel, WalletTradeLockModel])
 
             DatabaseManager.create_index_info_model(False, 0.0, 0.0, 25.0, 1, 3, 1)
             DatabaseManager.create_rebalance_tick_model(0)
