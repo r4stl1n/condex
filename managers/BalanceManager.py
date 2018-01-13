@@ -2,134 +2,149 @@ from logzero import logger
 
 from managers.DatabaseManager import DatabaseManager
 from managers.ExchangeManager import ExchangeManager
+from config import CondexConfig
 
 class BalanceManager:
-    """Class to handle dealing with index balances."""
 
     em = ExchangeManager()
 
-    def rebalance_coins(self, coins_above_threshold, coins_below_threshold, percentage_btc_amount,
-                        celery_app):
-        """Rebalance the index coins based on percentage from goal."""
-        if self.check_coins(coins_above_threshold, coins_below_threshold):
-            for coin_above_threshold in coins_above_threshold:
+    def rebalance_coins(self, coins_above_threshold, coins_below_threshold, celery_app):
+        """Sell off coins over threshold. Buy coins below threshold."""
+        for over in coins_above_threshold:
+            logger.debug("handling %s", over)
+            self.handle_coin(over, True, celery_app)
+        for under in coins_below_threshold:
+            logger.debug("handling %s", under)
+            self.handle_coin(under, False, celery_app)
 
-                for coin_below_threshold in coins_below_threshold:
+    def handle_coin(self, coin, is_over, celery_app):
+        """Handle re-balancing an individual coin."""
+        if DatabaseManager.get_coin_lock_model(coin) is None and DatabaseManager.get_wallet_trade_lock_model(coin) is None:
+            if not coin == "BTC":
+                if not self.em.market_active(coin, "BTC"):
+                    logger.error("Market for %s/BTC offline", coin)
+                    return
 
-                    if self.check_locks(coin_above_threshold, coin_below_threshold):
-                        self.handle_coin(coin_above_threshold, coin_below_threshold,
-                                         percentage_btc_amount, celery_app)
+            amount = self.calculate_amount(coin, is_over)
 
-    def check_coins(self, coins_above_threshold, coins_below_threshold):
-        """Make sure there are both coins to sell and coins to buy."""
-        if len(coins_above_threshold) >= 1:
-            logger.debug("Currently %s avalible for rebalance", len(coins_above_threshold))
-            logger.debug(coins_above_threshold)
+            if amount is None:
+                return
 
-            if len(coins_below_threshold) >= 1:
-                logger.debug("Currently %s  elgible for increase", len(coins_below_threshold))
-                logger.debug(coins_below_threshold)
-                return True
+            if not coin == "BTC":
+                self.handle_trade(coin, amount, is_over, celery_app)
+
+        else:
+            logger.warning("Coin %s is locked and cannot be traded", coin)
+
+    def calculate_amount(self, coin, is_over):
+        """Figure out how much to buy/sell.
+        Method should look up current value of each coin as trades fired previously could modify the balance.
+
+        Includes minimum trade check.
+
+        Returns None if amount doesn't meet trade threshold.
+        """
+
+        index_info = DatabaseManager.get_index_info_model()
+        coin_balance = DatabaseManager.get_coin_balance_model(coin)
+        indexed_coin = DatabaseManager.get_index_coin_model(coin)
+        amount = None
+        off = indexed_coin.get_percent_from_coin_target(coin_balance, index_info.TotalBTCVal)
+        logger.info("coin off percentage is %s with current coin balance of %s", off, coin_balance.BTCBalance)
+
+        if coin_balance.BTCBalance > 0:
+            if is_over is True:
+                logger.info("Coin %s over threshold, calculating off percentage", coin)
+                if off > 100:
+                    amount = round(coin_balance.BTCBalance * (1 / (off/100)), 8)
+                else:                    
+                    amount = round(coin_balance.BTCBalance * off/100, 8)
             else:
-                logger.debug("No coins eligible for increase")
+                logger.info("Coin %s under threshold, calculating off percentage", coin)
+                amount = round((coin_balance.BTCBalance / (1 - (abs(off)/100))) - coin_balance.BTCBalance, 8)
+
+            logger.info("Amount calculated as %s", amount)
+
+        if amount == None or amount == 0:
+            logger.info("Zero amount detected for %s. Attemping to buy 2x the minimum order.", coin)
+            pair_string = coin
+            if pair_string == "BTC":
+                pair_string += "/USDT"
+            else:
+                pair_string += "/BTC"
+
+            min_buy = self.em.get_min_buy_btc(pair_string)
+            
+            if min_buy is not None:
+                amount = round(min_buy * 2, 8)
+            else:
+                logger.info("Zero amount of coin %s and market info cannot be found")
+                amount = None
+
+        if amount is not None:
+            logger.info("checking to see if amount %s is greater than trade threshold %s", amount, CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
+
+            over_threshold = float(amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT)
+
+
+            if over_threshold is True:
+                if is_over is False:
+                    logger.info("checking to see if %s is available in BTC", amount)
+                    balance_available = 0.0
+                    btc_balance = DatabaseManager.get_coin_balance_model("BTC")
+                    btc_indexed_coin = DatabaseManager.get_index_coin_model("BTC")
+
+                    btc_off = btc_indexed_coin.get_percent_from_coin_target(btc_balance, index_info.TotalBTCVal)
+                    if btc_off <= 0:
+                        return None
+
+                    balance_available = round(btc_balance.BTCBalance * (btc_off / 100), 8)
+                    logger.info("Available BTC balance %s", balance_available)
+                    if balance_available >= amount:
+                        return amount
+
+                    #See if 1x the threshold is available
+                    single_threshold_amount = round(amount / (index_info.BalanceThreshold/100), 8)
+
+                    if not single_threshold_amount >= em.get_min_buy_btc(pair_string):
+                        single_threshold_amount = em.get_min_buy_btc(pair_string)
+
+                    if balance_available >= single_threshold_amount and float(single_threshold_amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT):
+                        return single_threshold_amount
+                    else:
+                        amount = None
+                    logger.warning("The amount to trade %s not available currently", amount)
+                else:
+                    logger.info("selling %s %s to BTC/USDT", amount, coin)
+            else:
+                logger.warning("Coin %s amount %s not over trade threshold", coin, amount)
+                amount = None
+
+        return amount
+
+    def handle_trade(self, coin, amount, is_over, celery_app):
+        """Send the appropriate celery message based on buy/sell."""
+
+        string_ticker = coin
+        if coin == "BTC":
+            string_ticker += "/USDT"
         else:
-            logger.debug("No coins above threshold")
+            string_ticker += "/BTC"
+        if self.em.check_min_buy(amount, string_ticker):
+            
+            ticker = self.em.get_ticker(string_ticker)
+            single_coin_cost = ticker["last"]
+            num_coins = round(amount / single_coin_cost, 8)
+            
+            DatabaseManager.create_coin_lock_model(coin)
+            DatabaseManager.create_wallet_trade_lock_model(coin)
 
-        return False
-
-    def check_locks(self, coin_above_threshold, coin_below_threshold):
-        """Check the coins to make sure neither are currently locked."""
-        logger.debug("Checking locks for %s and %s", coin_above_threshold, coin_below_threshold)
-        if DatabaseManager.get_coin_lock_model(coin_above_threshold) is not None:
-            logger.debug("Current Avalible Coin Is Locked - %s", coin_above_threshold)
-            return False
-
-        if DatabaseManager.get_coin_lock_model(coin_below_threshold) is not None:
-            logger.debug("Current Eligible Coin Is Locked - %s", coin_below_threshold)
-            return False
-
-        return True
-
-    def check_markets(self, coin_above_threshold, coin_below_threshold):
-        """Check the markets and make sure neither are unavailable."""
-        logger.debug("Checking markets for %s and %s ", coin_above_threshold, coin_below_threshold)
-        market_one_online = False
-        market_two_online = False
-
-        if not coin_above_threshold == "BTC":
-
-            if self.em.market_active(coin_above_threshold, "BTC"):
-                market_one_online = True
+            if is_over is True:
+                logger.debug("selling %s", coin)
+                celery_app.send_task('Tasks.perform_sell_task', args=[coin.upper(), num_coins])
+            else:
+                logger.debug("buying %s", coin)
+                celery_app.send_task('Tasks.perform_buy_task', args=[coin.upper(), num_coins])
         else:
-            market_one_online = True
+            logger.debug("purchase %s does not meet market minimum")
 
-        if not coin_below_threshold == "BTC":
-
-            if self.em.market_active(coin_below_threshold, "BTC"):
-                market_two_online = True
-        else:
-            market_two_online = True
-
-        if market_one_online and market_two_online:
-            return True
-
-        logger.warning("One of the market pairs were offline during rebalance")
-        return False
-
-    def handle_coin(self, coin_above_threshold, coin_below_threshold, percentage_btc_amount,
-                    celery_app):
-        """Handle buying and selling these coins."""
-        logger.debug("Handling sell/buy for %s and %s", coin_above_threshold, coin_below_threshold)
-        coin_balance = DatabaseManager.get_coin_balance_model(coin_above_threshold)
-
-        amounts = self.calculate_amounts(coin_above_threshold, coin_below_threshold,
-                                         percentage_btc_amount)
-        amount_to_sell = amounts["rebalance"]
-        amount_to_buy = amounts["eligible"]
-
-        if coin_balance.TotalCoins >= amount_to_sell:
-
-            if self.check_markets(coin_above_threshold, coin_below_threshold):
-
-                DatabaseManager.create_coin_lock_model(coin_above_threshold)
-
-                DatabaseManager.create_coin_lock_model(coin_below_threshold)
-
-                logger.info("Performing Rebalance %s %s - %s %s", coin_above_threshold.upper(),
-                            amount_to_sell, coin_below_threshold.upper(),
-                            amount_to_buy)
-                celery_app.send_task(
-                    'Tasks.perform_rebalance_task', args=[
-                        coin_above_threshold.upper(), amount_to_sell,
-                        coin_below_threshold.upper(), amount_to_buy])
-        else:
-            logger.error("Failed to sell coins - we do not have enough of %s", coin_above_threshold)
-
-    def calculate_amounts(self, coin_above_threshold, coin_below_threshold, percentage_btc_amount):
-        """Calculate the amounts necessary to buy and sell."""
-        rebalance_special_ticker = coin_above_threshold + "/BTC"
-
-        if coin_above_threshold == "BTC":
-            rebalance_special_ticker = "BTC/USDT"
-
-        rebalance_coin_ticker_model = DatabaseManager.get_ticker_model(rebalance_special_ticker)
-        eligible_coin_ticker_model = DatabaseManager.get_ticker_model(coin_below_threshold + "/BTC")
-
-        amount_to_sell = 0.0
-        amount_to_buy = 0.0
-        if coin_above_threshold == "BTC":
-            amount_to_sell = percentage_btc_amount
-        else:
-            btc_val = rebalance_coin_ticker_model.BTCVal
-            if btc_val is not None and btc_val > 0:
-                amount_to_sell = percentage_btc_amount / btc_val
-
-        if coin_below_threshold == "BTC":
-            amount_to_buy = percentage_btc_amount
-        else:
-            btc_val = eligible_coin_ticker_model.BTCVal
-            if btc_val is not None and btc_val > 0:
-                amount_to_buy = percentage_btc_amount / btc_val
-
-        return {"rebalance": amount_to_sell, "eligible": amount_to_buy}
-        
