@@ -107,7 +107,7 @@ class BalanceManager:
                     single_threshold_amount = round(amount / (index_info.BalanceThreshold/100), 8)
 
                     if not single_threshold_amount >= em.get_min_buy_btc(pair_string):
-                        single_threshold_amount = em.get_min_buy_btc(pair_string)
+                        single_threshold_amount = em.get_min_buy_btc(pair_string) * 2 
 
                     if balance_available >= single_threshold_amount and float(single_threshold_amount) >= float(CondexConfig.BITTREX_MIN_BTC_TRADE_AMOUNT):
                         return single_threshold_amount
