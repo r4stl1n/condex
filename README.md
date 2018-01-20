@@ -3,6 +3,9 @@
 ### Description
 Condex is a console based crypto currency Index Fund Management centered around bittrex. It is designed to easily manage the allocation and rebalancing of your index fund.
 
+### Getting Started
+Check out our {Wiki}[https://github.com/R4stl1n/condex/wiki] for more detailed information and instructions on getting started.
+
 
 ### Who To Thank:
 
