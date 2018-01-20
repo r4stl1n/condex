@@ -49,6 +49,7 @@ class ShowCommandManager:
         sys.stdout.write('\n')
 
     def show_stats(self):
+
         indexInfo = IndexInfoModel.get(id=1)
 
         # Create the Index Table

@@ -13,6 +13,7 @@ from models.IndexedCoinModel import IndexedCoinModel
 from models.CoinBalanceModel import CoinBalanceModel
 from models.RebalanceTickModel import RebalanceTickModel
 from models.SupportedCoinModel import SupportedCoinModel
+from models.WalletTradeLockModel import WalletTradeLockModel
 
 class DatabaseManager:
 
@@ -298,3 +299,47 @@ class DatabaseManager:
                 # Model dosen't exist
                 #logger.exception(e)
                 return False
+
+    @staticmethod
+    def get_wallet_trade_lock_model(ticker):
+        with internal_database.execution_context():
+            try:
+                return WalletTradeLockModel.get(WalletTradeLockModel.Ticker==ticker)
+            except Exception as e:
+                # Model dosen't exist
+                #logger.exception(e)
+                return None
+
+    @staticmethod
+    def create_wallet_trade_lock_model(ticker):
+        with internal_database.execution_context():
+            try:
+                WalletTradeLockModel.create(Ticker=ticker)
+                return True
+            except IntegrityError:
+                return False
+            except Exception as e:
+                logger.exception(e)
+
+    @staticmethod
+    def delete_wallet_trade_lock_model(ticker):
+        with internal_database.execution_context():
+            try:
+                walletLockModel = WalletTradeLockModel.get(WalletTradeLockModel.Ticker==ticker)
+                walletLockModel.delete_instance()
+                return True
+            except Exception as e:
+                # Model dosen't exist
+                #logger.exception(e)
+                return False
+
+
+    @staticmethod
+    def get_all_wallet_trade_lock_models():
+        with internal_database.execution_context():
+            try:
+                return WalletTradeLockModel.select()
+            except Exception as e:
+                # Model dosen't exist
+                #logger.exception(e)
+                return None

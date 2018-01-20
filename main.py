@@ -181,7 +181,7 @@ class ConDex(cmd.Cmd):
         return True
 
 if __name__ == '__main__':
-    logzero.loglevel(logging.INFO)
+    logzero.loglevel(logging.DEBUG)
     logzero.logfile("condex.log")
     Util.clear_screen()
     Util.bootstrap()

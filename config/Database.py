@@ -1,5 +1,6 @@
 from config import CondexConfig
 
+
 from peewee import *
 from playhouse.pool import *
 
